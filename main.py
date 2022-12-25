@@ -1,6 +1,7 @@
 import tkinter
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+import load
 
 def do_nothing():
     pass
@@ -65,6 +66,7 @@ class GUI:
     def _menu_bar_test(self):
         test_menu = tkinter.Menu(self.menu_bar, tearoff=0)
         test_menu.add_command(label="Graph", command=self._menu_bar_test_graph)
+        test_menu.add_command(label="Float", command=self._menu_bar_test_float)
         self.menu_bar.add_cascade(label="Test", menu=test_menu)
 
     def _menu_bar_test_graph(self):
@@ -96,6 +98,25 @@ class GUI:
     
         # placing the toolbar on the Tkinter window
         canvas.get_tk_widget().pack()
+    
+    def _menu_bar_test_float(self):
+        dir = "test_data.gr"
+        obj = load.read_gr_file()
+        obj.read_file(dir)
+        fig = Figure(figsize = (8, 5),
+                    dpi = 100)
+        y = [float(i.y) for i in obj.container]
+        plot1 = fig.add_subplot(111)
+        plot1.plot(y)
+        canvas = FigureCanvasTkAgg(fig,
+                                master = self.root)  
+        canvas.draw()
+        canvas.get_tk_widget().pack()
+        toolbar = NavigationToolbar2Tk(canvas,
+                                    self.root)
+        toolbar.update()
+        canvas.get_tk_widget().pack()
+        
 
 if __name__ == '__main__':
     root = tkinter.Tk()

@@ -1,4 +1,7 @@
 import tkinter
+from tkinter import filedialog as fd
+from tkinter.messagebox import showinfo
+
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import load
@@ -34,7 +37,7 @@ class GUI:
     def _menu_bar_file(self):
         file_menu = tkinter.Menu(self.menu_bar, tearoff=0)
         file_menu.add_command(label="Test OpenGL", command=do_nothing)
-        file_menu.add_command(label="Load Gr File", command=do_nothing)
+        file_menu.add_command(label="Load Gr File", command=self._menu_bar_file_load_gr_file)
         file_menu.add_command(label="Load Gr File in a New Window", command=do_nothing)
         file_menu.add_separator()
         file_menu.add_command(label="Load Plug'in", command=do_nothing)
@@ -117,8 +120,34 @@ class GUI:
         toolbar.update()
         canvas.get_tk_widget().pack()
         
+    def _menu_bar_file_load_gr_file(self):
+        filetypes = (
+            ('gr files', '*.gr'),
+            ('text files', '*.txt'),
+            ('All files', '*.*')
+        )
+
+        filename = fd.askopenfilename(
+            title='Open a file',
+            initialdir='/',
+            filetypes=filetypes)
+
+        obj = load.read_gr_file()
+        obj.read_file(filename)
+        fig = Figure(figsize = (8, 5),
+                    dpi = 100)
+        y = [float(i.y) for i in obj.container]
+        plot1 = fig.add_subplot(111)
+        plot1.plot(y)
+        canvas = FigureCanvasTkAgg(fig,
+                                master = self.root)  
+        canvas.draw()
+        canvas.get_tk_widget().pack()
+        toolbar = NavigationToolbar2Tk(canvas,
+                                    self.root)
+        toolbar.update()
+        canvas.get_tk_widget().pack()
 
 if __name__ == '__main__':
     root = tkinter.Tk()
     app = GUI(root)
-

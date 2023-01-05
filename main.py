@@ -1,10 +1,12 @@
 import tkinter
 from tkinter import filedialog as fd
 from tkinter.messagebox import showinfo
-
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import load
+from data_plot import DataPlot
+
 
 def do_nothing():
     pass
@@ -13,7 +15,8 @@ class GUI:
     def __init__(self, root):
         self.root = root
         self.menu_bar = tkinter.Menu(root)
-
+        self.frame = tkinter.Frame()
+        self.plot = None
         self._window()
         self._menu_bar_main()
 
@@ -120,33 +123,26 @@ class GUI:
         toolbar.update()
         canvas.get_tk_widget().pack()
         
+
     def _menu_bar_file_load_gr_file(self):
+        
         filetypes = (
             ('gr files', '*.gr'),
             ('text files', '*.txt'),
             ('All files', '*.*')
         )
 
-        filename = fd.askopenfilename(
+        file_path = fd.askopenfilename(
             title='Open a file',
             initialdir='/',
             filetypes=filetypes)
 
-        obj = load.read_gr_file()
-        obj.read_file(filename)
-        fig = Figure(figsize = (8, 5),
-                    dpi = 100)
-        y = [float(i.y) for i in obj.container]
-        plot1 = fig.add_subplot(111)
-        plot1.plot(y)
-        canvas = FigureCanvasTkAgg(fig,
-                                master = self.root)  
-        canvas.draw()
-        canvas.get_tk_widget().pack()
-        toolbar = NavigationToolbar2Tk(canvas,
-                                    self.root)
-        toolbar.update()
-        canvas.get_tk_widget().pack()
+        if self.plot == None:
+            self.plot = DataPlot(self.frame)
+        self.plot.plot_file(file_path)
+
+
+
 
 if __name__ == '__main__':
     root = tkinter.Tk()

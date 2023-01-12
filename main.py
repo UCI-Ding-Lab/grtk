@@ -1,11 +1,12 @@
 import tkinter
 from tkinter import filedialog as fd
-from tkinter.messagebox import showinfo
+import tkinter.messagebox
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import load
 from data_plot import DataPlot
+import timeit
 
 
 def do_nothing():
@@ -107,6 +108,9 @@ class GUI:
 
     def _menu_bar_file_load_gr_file(self):
         
+        #runtime calc
+        start = timeit.default_timer()
+        
         filetypes = (
             ('gr files', '*.gr'),
             ('text files', '*.txt'),
@@ -125,6 +129,9 @@ class GUI:
         else:
             self.plot.cur_path = file_path
             self.plot._replace_plot()
+        
+        stop = timeit.default_timer()
+        tkinter.messagebox.showinfo(title='-',message=f'loaded, runtime={stop-start}ms')
     
     def _enable_cord_marker(self):
         if not self.plot:

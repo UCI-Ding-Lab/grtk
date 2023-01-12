@@ -107,10 +107,6 @@ class GUI:
         canvas.get_tk_widget().pack()
 
     def _menu_bar_file_load_gr_file(self):
-        
-        #runtime calc
-        start = timeit.default_timer()
-        
         filetypes = (
             ('gr files', '*.gr'),
             ('text files', '*.txt'),
@@ -123,10 +119,12 @@ class GUI:
             filetypes=filetypes)
 
         if self.plot == None:
+            start = timeit.default_timer()
             self.plot = DataPlot(self.frame)
             self.plot.cur_path = file_path
             self.plot.plot_file()
         else:
+            start = timeit.default_timer()
             self.plot.cur_path = file_path
             self.plot._replace_plot()
         

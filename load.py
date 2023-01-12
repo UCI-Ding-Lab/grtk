@@ -1,5 +1,5 @@
 class load_error(Exception):
-    print("Error loading file")
+    pass
 
 class anchor(object):
     def __init__(self, x, y):
@@ -17,4 +17,4 @@ class read_gr_file(object):
                 for i in temp:
                     self.container.append(anchor(x=i.split(" ")[0], y=i.split(" ")[1]))
         except:
-            raise load_error
+            raise load_error("Error Loading File")

@@ -5,50 +5,51 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 import load
 
 class DataPlot():
-    def __init__(self, frame):
+    def __init__(self, frame: tkinter.Frame):
         self.frame = frame
         self.plot = None
         self.tool_bar = None
+        self.enable_dot = False
+        self.cords = None
+        self.cur_path = None
         #self.canvas = None
 
-    def plot_file(self, file_path):
-        
-        if self.plot == None:
-            self._plot(file_path)
+    def plot_file(self):
+        if not self.cur_path:
+            print("Error")
         else:
-            self._replace_plot(file_path)
+            if self.plot == None:
+                # make initial plot
+                # setup mapping
+                # setup canvas
+                fig = Figure(figsize = (8, 5), dpi = 100)
+                self.plot = fig.add_subplot(111)
+                self._plot()
+                self.plot.grid()
+                canvas = FigureCanvasTkAgg(fig, self.frame)
+                self.tool_bar = NavigationToolbar2Tk(canvas, self.frame)
+                self.tool_bar.update()
+                canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
+                self.frame.pack(fill=tkinter.BOTH, expand=1)
+            else:
+                self.frame.pack_forget()
+                self._replace_plot()
+                self.plot.grid()
+                self.frame.pack(fill=tkinter.BOTH, expand=1)
 
-    def _plot(self, file_path):
+    def _plot(self):
         obj = load.read_gr_file()
-        obj.read_file(file_path)
-        fig = Figure(figsize = (8, 5),
-                    dpi = 100)
-
-        y = [float(i.y) for i in obj.container]
-
-        self.plot = fig.add_subplot(111)
-
-        self.plot.plot(y)
-        self.plot.grid()
+        obj.read_file(self.cur_path)
+        self.cords = [float(i.y) for i in obj.container]
         
-        canvas = FigureCanvasTkAgg(fig, self.frame)
-        #self.fig = fig
-        #self.canvas = canvas
-        self.tool_bar = NavigationToolbar2Tk(canvas, self.frame)
-        self.tool_bar.update()
-        canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
-        
-        
-        self.frame.pack(fill=tkinter.BOTH, expand=1)
+        self.plot.plot(self.cords, linewidth=.5)
+        # preference
+        if self.enable_dot:
+            self.plot.plot(self.cords,'o',markersize=2,color=(1,0,0))
 
-
-    def _replace_plot(self, file_path):
-        obj = load.read_gr_file()
-        obj.read_file(file_path)
-        y = [float(i.y) for i in obj.container]
-        self.plot.clear()
-        self.plot.plot(y)
-        self.plot.grid()
+    def _replace_plot(self):
+        self.clear_plot()
+        self._plot()
         
         #canvas = FigureCanvasTkAgg(self.fig, self.frame)
         #self.canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
@@ -58,3 +59,11 @@ class DataPlot():
 
     def clear_plot(self):
         self.plot.clear()
+    
+    def _set_path(self, path):
+        # set target path
+        self.cur_path = path
+    
+    def _set_all_default(self):
+        self.cur_path = None
+        self.enable_dot = False

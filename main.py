@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 import load
 from data_plot import DataPlot
 import timeit
+from logger import logger
 
 
 def do_nothing():
@@ -14,6 +15,7 @@ def do_nothing():
 
 class GUI:
     def __init__(self, root: tkinter.Tk):
+        self.log = logger()
         self.root = root
         self.menu_bar = tkinter.Menu(root)
         self.frame = tkinter.Frame()
@@ -23,6 +25,7 @@ class GUI:
 
         root.config(menu=self.menu_bar)
         root.mainloop()
+        self.log._close()
 
     def _window(self):
         self.root.title('Data Visualization Software')
@@ -107,33 +110,36 @@ class GUI:
         canvas.get_tk_widget().pack()
 
     def _menu_bar_file_load_gr_file(self):
-        filetypes = (
-            ('gr files', '*.gr'),
-            ('text files', '*.txt'),
-            ('All files', '*.*')
-        )
+        try:
+            filetypes = (
+                ('gr files', '*.gr'),
+                ('text files', '*.txt'),
+                ('All files', '*.*')
+            )
 
-        file_path = fd.askopenfilename(
-            title='Open a file',
-            initialdir='/',
-            filetypes=filetypes)
+            file_path = fd.askopenfilename(
+                title='Open a file',
+                initialdir='/',
+                filetypes=filetypes)
 
-        if self.plot == None:
-            start = timeit.default_timer()
-            self.plot = DataPlot(self.frame)
-            self.plot.cur_path = file_path
-            self.plot.plot_file()
-        else:
-            start = timeit.default_timer()
-            self.plot.cur_path = file_path
-            self.plot._replace_plot()
-        
-        stop = timeit.default_timer()
-        tkinter.messagebox.showinfo(title='-',message=f'loaded, runtime={stop-start}ms')
+            if self.plot == None:
+                start = timeit.default_timer()
+                self.plot = DataPlot(self.frame)
+                self.plot.cur_path = file_path
+                self.plot.plot_file()
+            else:
+                start = timeit.default_timer()
+                self.plot.cur_path = file_path
+                self.plot._replace_plot()
+            
+            stop = timeit.default_timer()
+            self.log._log(f'graph loaded, runtime = {stop-start} s')
+        except Exception as e:
+            self.log._log("ERROR: "+repr(e))
     
     def _enable_cord_marker(self):
         if not self.plot:
-            print("Failed")
+            self.log._log("ERROR: Failed to enable cord marker, plot does not exist")
         else:
             self.plot.enable_dot = True
             self.plot._replace_plot()

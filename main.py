@@ -136,6 +136,7 @@ class GUI:
             self.log._log(f'graph loaded, runtime = {stop-start} s')
         except Exception as e:
             self.log._log("ERROR: "+repr(e))
+            raise e
     
     def _enable_cord_marker(self):
         if not self.plot:

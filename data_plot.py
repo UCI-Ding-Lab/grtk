@@ -12,7 +12,8 @@ class DataPlot():
         self.enable_dot = False
         self.cords = None
         self.cur_path = None
-        #self.canvas = None
+        self.canvas = None
+        self.fig = None
 
     def plot_file(self):
         if not self.cur_path:
@@ -22,20 +23,29 @@ class DataPlot():
                 # make initial plot
                 # setup mapping
                 # setup canvas
-                fig = Figure(figsize = (8, 5), dpi = 100)
-                self.plot = fig.add_subplot(111)
+                self.fig = Figure(figsize = (8, 5), dpi = 100)
+                self.plot = self.fig.add_subplot(111)
                 self._plot()
                 self.plot.grid()
-                canvas = FigureCanvasTkAgg(fig, self.frame)
-                self.tool_bar = NavigationToolbar2Tk(canvas, self.frame)
+                self.canvas = FigureCanvasTkAgg(self.fig, self.frame)
+                self.tool_bar = NavigationToolbar2Tk(self.canvas, self.frame)
                 self.tool_bar.update()
-                canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
+                self.canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
                 self.frame.pack(fill=tkinter.BOTH, expand=1)
             else:
                 self.frame.pack_forget()
                 self._replace_plot()
                 self.plot.grid()
+                
                 self.frame.pack(fill=tkinter.BOTH, expand=1)
+                # self.canvas.get_tk_widget().destroy()
+                # self.canvas = FigureCanvasTkAgg(fig, self.frame)
+                
+                #self.plot.draw()
+                # self.canvas.draw()
+                # self.canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
+                #self.plot.show()
+                #self.plot.draw()
 
     def _plot(self):
         obj = load.read_gr_file()
@@ -47,9 +57,15 @@ class DataPlot():
         if self.enable_dot:
             self.plot.plot(self.cords,'o',markersize=2,color=(1,0,0))
 
+        
+
     def _replace_plot(self):
         self.clear_plot()
         self._plot()
+        self.canvas.get_tk_widget().destroy()
+        self.canvas = FigureCanvasTkAgg(self.fig, self.frame)
+        self.canvas.draw()
+        self.canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
         
         #canvas = FigureCanvasTkAgg(self.fig, self.frame)
         #self.canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)

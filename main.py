@@ -122,15 +122,11 @@ class GUI:
                 initialdir='/',
                 filetypes=filetypes)
 
+            start = timeit.default_timer()
             if self.plot == None:
-                start = timeit.default_timer()
                 self.plot = DataPlot(self.frame)
-                self.plot.cur_path = file_path
-                self.plot.plot_file()
-            else:
-                start = timeit.default_timer()
-                self.plot.cur_path = file_path
-                self.plot._replace_plot()
+            
+            self.plot.plot_file(file_path)
             
             stop = timeit.default_timer()
             self.log._log(f'graph loaded, runtime = {stop-start} s')
@@ -144,6 +140,10 @@ class GUI:
         else:
             self.plot.enable_dot = True
             self.plot._replace_plot()
+
+
+class Window:
+    pass
 
 if __name__ == '__main__':
     root = tkinter.Tk()

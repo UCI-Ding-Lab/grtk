@@ -3,17 +3,24 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import load
+from plot_preference import preference
 
 class DataPlot():
     def __init__(self, frame: tkinter.Frame):
         self.frame = frame
         self.plot = None
         self.tool_bar = None
-        self.enable_dot = False
         self.cords = None
         self.file_path = None
         self.canvas = None
         self.fig = None
+        self.options = {
+            "style": "solid",
+            "width": .5,
+            "dot_color": "red",
+            "dot_size": 2.5,
+            "line_color": "red",
+        }
 
     def plot_file(self, file_path):
         self.file_path = file_path
@@ -35,12 +42,9 @@ class DataPlot():
         obj.read_file(self.file_path)
         self.cords = [float(i.y) for i in obj.container]
         
-        self.plot.plot(self.cords, linewidth=.5)
+        self.plot.plot(self.cords, **preference(self.options))
         self.plot.grid()
-        # preference
-        if self.enable_dot:
-            self.plot.plot(self.cords,'o',markersize=2,color=(1,0,0))
-
+        
         self.canvas = FigureCanvasTkAgg(self.fig, self.frame)
         self.tool_bar = NavigationToolbar2Tk(self.canvas, self.frame)
         self.tool_bar.update()

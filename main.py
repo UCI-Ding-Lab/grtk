@@ -16,9 +16,11 @@ def do_nothing():
 class GUI:
     def __init__(self, root: tkinter.Tk):
         self.log = logger()
+        self.debug_mode = False
         self.root = root
         self.menu_bar = tkinter.Menu(root)
         self.frame = tkinter.Frame()
+        self.option_frame = tkinter.Frame()
         self.plot = None
         self._window()
         self._menu_bar_main()
@@ -61,6 +63,11 @@ class GUI:
     def _menu_bar_options(self):
         options_menu = tkinter.Menu(self.menu_bar, tearoff=0)
         options_menu.add_command(label="Whatever", command=do_nothing)
+        options_menu.add_command(label="Line Color", command=lambda: self._color_options("l"))
+        options_menu.add_command(label="Marker Color", command=lambda: self._color_options("m"))
+        options_menu.add_command(label="Line Width", command=do_nothing)
+        options_menu.add_command(label="Line Type", command=do_nothing)
+        
         self.menu_bar.add_cascade(label="Options", menu=options_menu)
 
     def _menu_bar_tools(self):
@@ -129,17 +136,43 @@ class GUI:
             self.plot.plot_file(file_path)
             
             stop = timeit.default_timer()
-            self.log._log(f'graph loaded, runtime = {stop-start} s')
+            if self.debug_mode:
+                self.log._log(f'graph loaded, runtime = {stop-start} s')
         except Exception as e:
-            self.log._log("ERROR: "+repr(e))
+            if self.debug_mode:
+                self.log._log("ERROR: "+repr(e))
             raise e
     
     def _enable_cord_marker(self):
-        if not self.plot:
+        if not self.plot and self.debug_mode:
             self.log._log("ERROR: Failed to enable cord marker, plot does not exist")
         else:
             self.plot.enable_dot = True
             self.plot._replace_plot()
+    
+    def _color_options(self, type):
+        def save_to_opt(self, choice: tkinter.StringVar):
+            if type == "m":
+                self.plot.options["dot_color"] = choice.get()
+            else:
+                self.plot.options["line_color"] = choice.get()
+            self.plot._replace_plot()
+            for i in self.option_frame.winfo_children():
+                i.destroy()
+            self.option_frame.pack_forget()
+        choice = tkinter.StringVar()
+        tkinter.Radiobutton(self.option_frame, value="red", variable=choice, bg='red').grid(row=0,column=0)
+        tkinter.Radiobutton(self.option_frame, value="green", variable=choice, bg='green').grid(row=0,column=1)
+        tkinter.Radiobutton(self.option_frame, value="blue", variable=choice, bg='blue').grid(row=0,column=2)
+        tkinter.Radiobutton(self.option_frame, value="cyan", variable=choice, bg='cyan').grid(row=0,column=3)
+        tkinter.Radiobutton(self.option_frame, value="magenta", variable=choice, bg='magenta').grid(row=0,column=4)
+        tkinter.Radiobutton(self.option_frame, value="yellow", variable=choice, bg='yellow').grid(row=0,column=5)
+        tkinter.Radiobutton(self.option_frame, value="black", variable=choice, bg='black').grid(row=0,column=6)
+        tkinter.Radiobutton(self.option_frame, value="white", variable=choice, bg='white').grid(row=0,column=7)
+        tkinter.Button(self.option_frame, text="Save", command=lambda: save_to_opt(self, choice)).grid(row=0,column=8)
+        self.option_frame.pack()
+        
+        
 
 
 class Window:

@@ -32,8 +32,6 @@ class DataPlot():
             else:
                 self._replace_plot()
 
-
-
     def _plot(self):
         self.fig = Figure(figsize = (8, 5), dpi = 100)
         self.plot = self.fig.add_subplot(111)
@@ -51,22 +49,8 @@ class DataPlot():
         self.canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
         self.frame.pack(fill=tkinter.BOTH, expand=1)
 
-        
-
     def _replace_plot(self):
         self.tool_bar.destroy()
         self.canvas.get_tk_widget().destroy()
         self.plot.clear()
         self._plot()
-
-
-    # def clear_plot(self):
-    #     self.plot.clear()
-    
-    def _set_path(self, path):
-        # set target path
-        self.file_path = path
-    
-    def _set_all_default(self):
-        self.file_path = None
-        self.enable_dot = False

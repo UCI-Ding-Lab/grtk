@@ -41,19 +41,36 @@ def plot_all_graph(sub_plot: axes.Axes, container: list[single_line]):
 
 # edit a single line w/o changing others
 # use file_path to find index, use index to find plot in figure
-def remove_lines(sub_plot: axes.Axes, file_path,  container: list[single_line]):
+def remove_line(sub_plot: axes.Axes, file_path,  container: list[single_line]):
     counter = 0
-    target = None
+    target: int = None
     for i in container:
         if i.file_path == file_path:
             target = counter
+            break
         counter += 1
     sub_plot.lines.pop(target)
 
+def change_line_preference(sub_plot: axes.Axes, file_path,  container: list[single_line], **kwargs):
+    counter = 0
+    target: int = None
+    for i in container:
+        if i.file_path == file_path:
+            target = counter
+            break
+        counter += 1
+    sub_plot.get_lines()[target].update(kwargs)
+
 # (main) 
-# plot all fileA fileB fileC then remove fileC
+# plot all fileA fileB fileC then remove fileC then change fileA to black and thick line
 ploted_container = plot_all_graph(plot1, container)
-remove_lines(plot1, "/user/home/fileC.gr", container)
+remove_line(plot1, "/user/home/fileC.gr", container)
+
+parameter_to_update = dict(
+    color="black",
+    linewidth=5,
+)
+change_line_preference(plot1, "/user/home/fileA.gr", container, **parameter_to_update)
 
 # mapping to tkinter
 canvas = FigureCanvasTkAgg(fig, master = root)  

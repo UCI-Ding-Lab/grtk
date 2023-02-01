@@ -4,6 +4,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 import math
 import tkinter
 from matplotlib import axes
+from load import read_gr_file
 
 # root object
 root = tkinter.Tk()
@@ -30,9 +31,13 @@ plot1 = fig.add_subplot(111)
 
 # create multiple lines and store in container
 container = []
-container.append(single_line([t,a], "/user/home/fileA.gr"))
-container.append(single_line([t,b], "/user/home/fileB.gr"))
-container.append(single_line([t,c], "/user/home/fileC.gr"))
+loader = read_gr_file()
+test_file_A = "/Users/tiger/Documents/Github/grtk/raw/formatted.gr"
+loader.read_file(test_file_A)
+container.append(single_line(loader.get_result(), test_file_A))
+test_file_B = "/Users/tiger/Documents/Github/grtk/formatted/test_data.gr"
+loader.read_file(test_file_B)
+container.append(single_line(loader.get_result(), test_file_B))
 
 # draw lines and put references in a container
 def plot_all_graph(sub_plot: axes.Axes, container: list[single_line]):
@@ -64,13 +69,12 @@ def change_line_preference(sub_plot: axes.Axes, file_path,  container: list[sing
 # (main) 
 # plot all fileA fileB fileC then remove fileC then change fileA to black and thick line
 ploted_container = plot_all_graph(plot1, container)
-remove_line(plot1, "/user/home/fileC.gr", container)
 
 parameter_to_update = dict(
     color="black",
-    linewidth=5,
+    linewidth=2,
 )
-change_line_preference(plot1, "/user/home/fileA.gr", container, **parameter_to_update)
+change_line_preference(plot1, test_file_B, container, **parameter_to_update)
 
 # mapping to tkinter
 canvas = FigureCanvasTkAgg(fig, master = root)  

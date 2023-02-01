@@ -12,3 +12,6 @@ class read_gr_file(object):
             temp = target.read().splitlines()
             for i in temp:
                 self.container.append(anchor(x=i.split(" ")[0], y=i.split(" ")[1]))
+    
+    def get_result(self):
+        return self.container

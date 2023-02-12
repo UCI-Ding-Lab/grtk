@@ -22,7 +22,7 @@ class FileMenu():
         fm = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
         fm.add_command(label="Test OpenGL", command=do_nothing)
         fm.add_command(label="Load Gr File", command=self._load_gr_file)
-        fm.add_command(label="Load Gr File in a New Window", command=do_nothing)
+        fm.add_command(label="Recent Gr File", command=do_nothing)
         fm.add_separator()
         fm.add_command(label="Load Plug'in", command=do_nothing)
         fm.add_command(label="Unload Plug'in", command=do_nothing)
@@ -45,7 +45,7 @@ class FileMenu():
 
             start = timeit.default_timer()
             if self.GUI.plot == None:
-                self.GUI.plot = data_plot.DataPlot(self.GUI.frame)
+                self.GUI.plot = data_plot.DataPlot(self.GUI)#.frame)
             
             self.GUI.plot.plot_file(file_path)
             

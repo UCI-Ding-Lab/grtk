@@ -15,6 +15,7 @@ import options_menu
 import tools_menu
 import treatment_menu
 import test_menu
+import data_plot_new
 
 def do_nothing():
     pass
@@ -25,9 +26,10 @@ class GUI:
         self.debug_mode = False
         self.root = root
         self.menu_bar = tkinter.Menu(root)
-        self.frame = tkinter.Frame()
+        self.frame = tkinter.Frame(self.root).pack()
         self.option_frame = tkinter.Frame()
         self.plot = None
+        self.container = data_plot_new.line_container(frame=self.frame, root=self.root)
         self._window()
         self._menu_bar_main()
 
@@ -50,7 +52,7 @@ class GUI:
         self._menu_bar_test()
     
     def _menu_bar_file(self):
-        fm = file_menu.FileMenu(self)
+        fm = file_menu.FileMenu(self, container=self.container)
 
     def _menu_bar_edit(self):
         em = edit_menu.EditMenu(self)

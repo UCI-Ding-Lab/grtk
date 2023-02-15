@@ -8,13 +8,15 @@ import load
 import data_plot
 import timeit
 from logger import logger
+from data_plot_new import line_container, single_line
 
 def do_nothing():
     pass
 
 class FileMenu():
-    def __init__(self, GUI):
+    def __init__(self, GUI, container: line_container):
         self.GUI = GUI
+        self.line_container = container
 
         self._init_file_menu()
 
@@ -44,11 +46,7 @@ class FileMenu():
                 filetypes=filetypes)
 
             start = timeit.default_timer()
-            if self.GUI.plot == None:
-                self.GUI.plot = data_plot.DataPlot(self.GUI.frame)
-            
-            self.GUI.plot.plot_file(file_path)
-            
+            self.line_container.load_and_plot(path=file_path)
             stop = timeit.default_timer()
             if self.GUI.debug_mode:
                 self.GUI.log._log(f'graph loaded, runtime = {stop-start} s')

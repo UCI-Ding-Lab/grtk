@@ -1,16 +1,17 @@
+# lib
 import tkinter
 import tkinter.messagebox
-from logger import logger
-import sys
 
-import file_menu
-import edit_menu
-import options_menu
-import tools_menu
-import treatment_menu
-import test_menu
-import data_plot_new
-import keyboard_events
+# files
+from helper.logger import logger
+from menus import file_menu
+from menus import edit_menu
+from menus import options_menu
+from menus import tools_menu
+from menus import treatment_menu
+from menus import test_menu
+from bin import data_plot_new
+from bin import keyboard_events
 
 def do_nothing():
     pass

@@ -24,7 +24,7 @@ class FileMenu():
         fm = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
         fm.add_command(label="Test OpenGL", command=do_nothing)
         fm.add_command(label="Load Gr File", command=self._load_gr_file)
-        fm.add_command(label="Load Gr File in a New Window", command=do_nothing)
+        fm.add_command(label="Recent Gr File", command=do_nothing)
         fm.add_separator()
         fm.add_command(label="Load Plug'in", command=do_nothing)
         fm.add_command(label="Unload Plug'in", command=do_nothing)

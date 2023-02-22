@@ -16,6 +16,7 @@ import tools_menu
 import treatment_menu
 import test_menu
 import data_plot_new
+import keyboard_events
 
 def do_nothing():
     pass
@@ -28,7 +29,7 @@ class GUI:
         self.menu_bar = tkinter.Menu(root)
         self.frame = tkinter.Frame(self.root).pack()
         self.option_frame = tkinter.Frame()
-        self.plot = None
+        self.plot = None #Should be a DataPlot object if some file is loaded to plot.
         self.container = data_plot_new.line_container(frame=self.frame, root=self.root)
         self._window()
         self._menu_bar_main()
@@ -42,34 +43,38 @@ class GUI:
         self.root.geometry("800x600")
         
     def _menu_bar_main(self):
-        self._menu_bar_file()
-        self._menu_bar_edit()
-        self._menu_bar_options()
-        self._menu_bar_tools()
-        self._menu_bar_treatment()
-
+        self._init_menu_bar_file()
+        self._init_menu_bar_edit()
+        self._init_menu_bar_options()
+        self._init_menu_bar_tools()
+        self._init_menu_bar_treatment()
+        
         # for testing purpose
-        self._menu_bar_test()
+        self._init_menu_bar_test()
+
+        #keyboard events
+        self._init_keyboard_events()
     
-    def _menu_bar_file(self):
+    def _init_menu_bar_file(self):
         fm = file_menu.FileMenu(self, container=self.container)
 
-    def _menu_bar_edit(self):
+    def _init_menu_bar_edit(self):
         em = edit_menu.EditMenu(self)
 
-    def _menu_bar_options(self):
+    def _init_menu_bar_options(self):
         om = options_menu.OptionsMenu(self)
 
-    def _menu_bar_tools(self):
+    def _init_menu_bar_tools(self):
         tm = tools_menu.ToolsMenu(self)
 
-    def _menu_bar_treatment(self):
+    def _init_menu_bar_treatment(self):
         tm = treatment_menu.TreatmentMenu(self)
 
-    def _menu_bar_test(self):
+    def _init_menu_bar_test(self):
        tm = test_menu.TestMenu(self)
 
-        
+    def _init_keyboard_events(self):
+        ke =  keyboard_events.KeyboardEvents(self)
         
 def GUI_manager():
     root = tkinter.Tk()

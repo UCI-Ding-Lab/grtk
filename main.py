@@ -1,13 +1,7 @@
 import tkinter
-from tkinter import filedialog as fd
 import tkinter.messagebox
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-import load
-#from data_plot import DataPlot
-import timeit
 from logger import logger
+import sys
 
 import file_menu
 import edit_menu
@@ -23,14 +17,14 @@ def do_nothing():
 
 class GUI:
     def __init__(self, root: tkinter.Tk):
+        self.menu_obj: dict[str, object] = {}
         self.log = logger()
         self.debug_mode = False
         self.root = root
         self.menu_bar = tkinter.Menu(root)
-        self.frame = tkinter.Frame(self.root).pack()
+        self.frame = tkinter.Frame(self.root)
         self.option_frame = tkinter.Frame()
-        self.plot = None #Should be a DataPlot object if some file is loaded to plot.
-        self.container = data_plot_new.line_container(frame=self.frame, root=self.root)
+        self.container = data_plot_new.line_container(frame=self.frame, root=self.root, menu_obj=self.menu_obj)
         self._window()
         self._menu_bar_main()
 
@@ -41,7 +35,7 @@ class GUI:
     def _window(self):
         self.root.title('Data Visualization Software')
         self.root.geometry("800x600")
-        
+    
     def _menu_bar_main(self):
         self._init_menu_bar_file()
         self._init_menu_bar_edit()
@@ -54,24 +48,30 @@ class GUI:
 
         #keyboard events
         self._init_keyboard_events()
-    
+        
     def _init_menu_bar_file(self):
         fm = file_menu.FileMenu(self, container=self.container)
-
+        self.menu_obj["file"] = fm
+        
     def _init_menu_bar_edit(self):
-        em = edit_menu.EditMenu(self)
+        em = edit_menu.EditMenu(self, container=self.container)
+        self.menu_obj["edit"] = em
 
     def _init_menu_bar_options(self):
         om = options_menu.OptionsMenu(self)
+        self.menu_obj["open"] = om
 
     def _init_menu_bar_tools(self):
         tm = tools_menu.ToolsMenu(self)
+        self.menu_obj["tools"] = tm
 
     def _init_menu_bar_treatment(self):
         tm = treatment_menu.TreatmentMenu(self)
+        self.menu_obj["treatment"] = tm
 
     def _init_menu_bar_test(self):
        tm = test_menu.TestMenu(self)
+       self.menu_obj["test"] = tm
 
     def _init_keyboard_events(self):
         ke =  keyboard_events.KeyboardEvents(self)
@@ -81,5 +81,4 @@ def GUI_manager():
     app = GUI(root)
 
 if __name__ == '__main__':
-
     GUI_manager()

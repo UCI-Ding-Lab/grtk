@@ -1,14 +1,9 @@
 import tkinter
 from tkinter import filedialog as fd
 import tkinter.messagebox
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-import load
-import data_plot
 import timeit
 from logger import logger
-from data_plot_new import line_container, single_line
+from data_plot_new import line_container
 
 def do_nothing():
     pass

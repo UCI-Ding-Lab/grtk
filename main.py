@@ -1,5 +1,6 @@
 # lib
 import tkinter
+import tkinter.ttk
 import tkinter.messagebox
 
 # files
@@ -12,6 +13,7 @@ from menus import treatment_menu
 from menus import test_menu
 from bin import data_plot_new
 from bin import keyboard_events
+from bin import layer_control
 
 def do_nothing():
     pass
@@ -23,19 +25,38 @@ class GUI:
         self.debug_mode = False
         self.root = root
         self.menu_bar = tkinter.Menu(root)
-        self.frame = tkinter.Frame(self.root)
-        self.option_frame = tkinter.Frame()
-        self.container = data_plot_new.line_container(frame=self.frame, root=self.root, menu_obj=self.menu_obj)
+        
+        self.init_frames()
+        self.container = data_plot_new.line_container(
+            frame=self.line_frame,
+            menu_obj=self.menu_obj
+        )
+        self.init_layer_ctl(self.rightframe, self.container)
+        
         self._window()
         self._menu_bar_main()
 
         root.config(menu=self.menu_bar)
         root.mainloop()
         self.log._close()
+    
+    def init_frames(self):
+        self.leftframe = tkinter.Frame(self.root)
+        self.leftframe.pack(fill=tkinter.BOTH, expand=1, side="left")
+        tkinter.ttk.Separator(self.root, orient=tkinter.VERTICAL).pack(fill="y", side="left")
+        self.rightframe = tkinter.Frame(self.root)
+        self.rightframe.pack(fill="y", expand=1, side="left")
+        tkinter.Label(self.rightframe, text="Layers", bg='yellow').pack(side="top")
 
+        self.line_frame = tkinter.Frame(self.leftframe)
+    
+    def init_layer_ctl(self, frame: tkinter.Frame, container: data_plot_new.line_container):
+        layer_ctl = layer_control.layers(frame, container)
+        self.menu_obj["layer"] = layer_ctl
+        
     def _window(self):
         self.root.title('Data Visualization Software')
-        self.root.geometry("800x600")
+        self.root.geometry("1050x700")
     
     def _menu_bar_main(self):
         self._init_menu_bar_file()

@@ -56,7 +56,7 @@ class GUI:
         
     def _window(self):
         self.root.title('Data Visualization Software')
-        self.root.geometry("1050x700")
+        self.root.geometry("1150x700")
     
     def _menu_bar_main(self):
         self._init_menu_bar_file()

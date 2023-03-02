@@ -127,6 +127,7 @@ class line_container(object):
                 break
             counter += 1
         self.matplot_subplot.get_lines()[target].update(kwargs)
+        self.refresh_canvas()
     
     def refresh_canvas(self) -> None:
         """refresh canvas after make any changes

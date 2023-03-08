@@ -22,6 +22,12 @@ class EditMenu():
         self.GUI.menu_bar.add_cascade(label="Edit", menu=self.main)
     
     def add_path(self, path: str, sub: str=None):
+        """add a line in sub menu
+
+        Args:
+            path (str): the name of the line (full file path)
+            sub (str, optional): can choose to add to "preference" submenu or "del" submenu. Defaults to None to add to both.
+        """
         if sub == "pref":
             self.preference_sub.add_command(label=path, command=do_nothing)
         elif sub == "del":
@@ -31,6 +37,12 @@ class EditMenu():
             self.delete_sub.add_command(label=path, command=lambda: self.trigger_del(path))
 
     def del_path(self, path: str, sub: str=None):
+        """delete a line in sub menu
+
+        Args:
+            path (str): the name of the line (full file path)
+            sub (str, optional): can choose to delete lines in "preference" submenu or "del" submenu. Defaults to None to add to both.
+        """
         if sub == "pref":
             self.preference_sub.delete(path)
         elif sub == "del":
@@ -40,4 +52,10 @@ class EditMenu():
             self.delete_sub.delete(path)
     
     def trigger_del(self, path: str) -> None:
+        """excecute after click on delete line
+        helper function
+
+        Args:
+            path (str): full path to delete
+        """
         self.container.remove_line(path)

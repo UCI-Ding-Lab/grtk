@@ -25,22 +25,20 @@ class GUI:
         self.debug_mode = False
         self.root = root
         self.menu_bar = tkinter.Menu(root)
-        
-        self.init_frames()
-        self.container = data_plot_new.line_container(
-            frame=self.line_frame,
-            menu_obj=self.menu_obj
-        )
-        self.init_layer_ctl(self.rightframe, self.container)
-        
+        self._init_frames()
+        self.container = data_plot_new.line_container(gui=self)
+        self.layer_ctl = layer_control.layers(self.rightframe, self.container)
         self._window()
         self._menu_bar_main()
-
         root.config(menu=self.menu_bar)
         root.mainloop()
         self.log._close()
     
-    def init_frames(self):
+    def _init_frames(self):
+        """left and right frame initialization
+        left frame contains the graph itself
+        right frame contains the layer control and preference control
+        """
         self.leftframe = tkinter.Frame(self.root)
         self.leftframe.pack(fill=tkinter.BOTH, expand=1, side="left")
         tkinter.ttk.Separator(self.root, orient=tkinter.VERTICAL).pack(fill="y", side="left")
@@ -49,16 +47,16 @@ class GUI:
         tkinter.Label(self.rightframe, text="Layers", bg='yellow').pack(side="top")
 
         self.line_frame = tkinter.Frame(self.leftframe)
-    
-    def init_layer_ctl(self, frame: tkinter.Frame, container: data_plot_new.line_container):
-        layer_ctl = layer_control.layers(frame, container)
-        self.menu_obj["layer"] = layer_ctl
-        
+
     def _window(self):
+        """set title and window size
+        """
         self.root.title('Data Visualization Software')
         self.root.geometry("1150x700")
     
     def _menu_bar_main(self):
+        """initializations of each tool bar selection
+        """
         self._init_menu_bar_file()
         self._init_menu_bar_edit()
         self._init_menu_bar_options()
@@ -72,31 +70,25 @@ class GUI:
         self._init_keyboard_events()
         
     def _init_menu_bar_file(self):
-        fm = file_menu.FileMenu(self, container=self.container)
-        self.menu_obj["file"] = fm
+        self.file_menu = file_menu.FileMenu(self, container=self.container)
         
     def _init_menu_bar_edit(self):
-        em = edit_menu.EditMenu(self, container=self.container)
-        self.menu_obj["edit"] = em
+        self.edit_menu = edit_menu.EditMenu(self, container=self.container)
 
     def _init_menu_bar_options(self):
-        om = options_menu.OptionsMenu(self)
-        self.menu_obj["open"] = om
+        self.option_menu = options_menu.OptionsMenu(self)
 
     def _init_menu_bar_tools(self):
-        tm = tools_menu.ToolsMenu(self)
-        self.menu_obj["tools"] = tm
+        self.tools_menu = tools_menu.ToolsMenu(self)
 
     def _init_menu_bar_treatment(self):
-        tm = treatment_menu.TreatmentMenu(self)
-        self.menu_obj["treatment"] = tm
+        self.treatment_menu = treatment_menu.TreatmentMenu(self)
 
     def _init_menu_bar_test(self):
-       tm = test_menu.TestMenu(self)
-       self.menu_obj["test"] = tm
+       self.test_menu = test_menu.TestMenu(self)
 
     def _init_keyboard_events(self):
-        ke =  keyboard_events.KeyboardEvents(self)
+        self.keyboard_events =  keyboard_events.KeyboardEvents(self)
         
 def GUI_manager():
     root = tkinter.Tk()

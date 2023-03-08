@@ -1,7 +1,10 @@
-import main
+# typecheck
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import main
 
 class KeyboardEvents():
-    def __init__(self, GUI: main.GUI):
+    def __init__(self, GUI: "main.GUI"):
         self.GUI = GUI
         self.GUI.root.bind('<Up>', self._keypress_up)
         self.GUI.root.bind('<Down>', self._keypress_down)

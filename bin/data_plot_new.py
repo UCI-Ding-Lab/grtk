@@ -6,21 +6,30 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 
 # file
 from helper import load
-from menus import edit_menu
-from bin import layer_control
+
+# typecheck
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import main
 
 class single_line(object):
     def __init__(self, cords: list[load.anchor], file_path: str):
-        
+        """single line object is the object for a single file path
+        a single file path may contain up to one line
+        this object has the lines cordinates in a list of anchor object
+        it also has the full file path, drawing preference, seperate cords, etc.
+
+        Args:
+            cords (list[load.anchor]): list of anchor objects
+            file_path (str): full file path
+        """
         # single line cords in anchor object
         self.cord: list[load.anchor] = cords
-        
         self.file_path = file_path
         self.parameters = dict(
             linewidth=0.5,
             color="black",
         )
-        
         # single line y cords
         self.abs_cords_y = [float(i.y) for i in cords]
         # single line x cords
@@ -30,15 +39,17 @@ class single_line(object):
         self.parameters = new_parameters
 
 class line_container(object):
-    def __init__(self, frame: tkinter.Frame, menu_obj: dict[str, object]):
-        self.frame = frame
-        self.menu_obj = menu_obj
+    def __init__(self, gui: "main.GUI"):
+        self.gui: "main.GUI" = gui
+        self.frame: tkinter.Frame = self.gui.line_frame
         # containers
         self.container: list[single_line] = []
         self.garbage: list[single_line] = []
         # file loader object
         self.loader = load.read_gr_file()
-        # figure init
+        self._figure_initialization()
+    
+    def _figure_initialization(self) -> None:
         self.matplot_figure: Figure = Figure(figsize = (8, 5), dpi = 100)
         self.matplot_subplot: Axes = self.matplot_figure.add_subplot(111)
         self.matplot_subplot.grid()
@@ -73,12 +84,11 @@ class line_container(object):
             path_object = single_line(anchor_container, path)
             x_cords = path_object.abs_cords_x
             y_cords = path_object.abs_cords_y
-            self.menu_obj["layer"].add_layer(path)
+            self.gui.layer_ctl.add_layer(path)
             
         self.matplot_subplot.plot(*[x_cords, y_cords], **path_object.parameters)
         self.container.append(path_object)
-        self.add_to_menu(path)
-        self.refresh_canvas()
+        self._refresh_canvas()
     
     def remove_line(self, path: str) -> None:
         """Remove line from the graph
@@ -108,13 +118,13 @@ class line_container(object):
             self.garbage.append(self.container[counter])
 
         self.container.pop(counter)
-        self.remove_from_menu(path)
-        self.refresh_canvas()
+        self._refresh_canvas()
     
     def change_line_preference(self, path: str, **kwargs: dict) -> None:
         """change line preference according to content in dictionary
         find the single line object that need to change preference in the container
         get the line Axes from subplot and update configs
+        update line objects in the line container
         
         Args:
             path (str): full file path
@@ -124,12 +134,14 @@ class line_container(object):
         for i in self.container:
             if i.file_path == path:
                 target = counter
+                for updated_key, updated_val in kwargs.items():
+                    self.container[target].parameters[updated_key] = updated_val
                 break
             counter += 1
         self.matplot_subplot.get_lines()[target].update(kwargs)
-        self.refresh_canvas()
+        self._refresh_canvas()
     
-    def refresh_canvas(self) -> None:
+    def _refresh_canvas(self) -> None:
         """refresh canvas after make any changes
         helper function
         """
@@ -143,54 +155,30 @@ class line_container(object):
         self.tk_toolbar.update()
         self.frame.pack(fill=tkinter.BOTH, expand=1)
     
-    def add_to_menu(self, path: str) -> None:
-        """add path to edit menu
-        helper function
-
-        Args:
-            path (str): full file path
-        """
-        em: edit_menu.EditMenu = self.menu_obj["edit"]
-        em.add_path(path=path)
-    
-    def remove_from_menu(self, path: str) -> None:
-        """delete path from edit menu
-        helper function
-
-        Args:
-            path (str): full file path
-        """
-        em: edit_menu.EditMenu = self.menu_obj["edit"]
-        em.del_path(path=path)
-    
-    def view_shift_left(self):
+    def view_shift_left(self) -> None:
         xrange = self.matplot_subplot.get_xlim()[1] - self.matplot_subplot.get_xlim()[0]
         self.matplot_subplot.set_xlim(\
             xmin=self.matplot_subplot.get_xlim()[0]-xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]-xrange/4)
         self.tk_canvas.draw()
 
-    def view_shift_right(self):
+    def view_shift_right(self) -> None:
         xrange = self.matplot_subplot.get_xlim()[1] - self.matplot_subplot.get_xlim()[0]
         self.matplot_subplot.set_xlim(\
             xmin=self.matplot_subplot.get_xlim()[0]+xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]+xrange/4)
         self.tk_canvas.draw()
 
-    def view_zoom_out(self):
+    def view_zoom_out(self) -> None:
         xrange = self.matplot_subplot.get_xlim()[1] - self.matplot_subplot.get_xlim()[0]
         self.matplot_subplot.set_xlim(\
             xmin=self.matplot_subplot.get_xlim()[0]-xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]+xrange/4)
         self.tk_canvas.draw()
 
-    def view_zoom_in(self):
+    def view_zoom_in(self) -> None:
         xrange = self.matplot_subplot.get_xlim()[1] - self.matplot_subplot.get_xlim()[0]
         self.matplot_subplot.set_xlim(\
             xmin=self.matplot_subplot.get_xlim()[0]+xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]-xrange/4)
         self.tk_canvas.draw()
-
-
-
-

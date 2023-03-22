@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import filedialog as fd
-import tkinter.messagebox
+# import tkinter.messagebox
+from tkinter import messagebox
 import timeit
 from bin.data_plot_new import line_container
 import os
@@ -22,6 +23,15 @@ class RecentFilesManager():
         # self.read()
 
     def add(self, item):
+        """
+        Add item to recent list.
+        """
+        # if os.path.exists(item) == False:
+        #     file_missing_error = "The following file is missing:\n" + item
+        #     messagebox.showerror("File Missing", file_missing_error)
+        #     self.delete(item)
+        #     return
+        
         self.read()
         if item in self.q:
             self.q.remove(item)
@@ -37,8 +47,30 @@ class RecentFilesManager():
         self.menu.delete(0, "end")
         for i in self.q:
             self.menu.add_command(label=i, command=lambda: self.FileMenu._load_gr_file(i))
+        return
 
+    def delete(self, item):
+        """
+        Remove item from recent list.
+        """
+        self.read()
+        if item in self.q:
+            self.q.remove(item)
+        temp = ""
+        for i in self.q:
+            temp = temp + i + "\n"
+        self.file = open(self.file_path, "w")
+        self.file.write(temp)
+        self.file.close()
+        self.menu.delete(0, "end")
+        for i in self.q:
+            self.menu.add_command(label=i, command=lambda: self.FileMenu._load_gr_file(i))
+        return
+    
     def read(self):
+        """
+        Update self.q from file.
+        """
         self.q = []
         if os.path.exists(self.file_path) == False:
             self.file = open(self.file_path, "w")
@@ -48,6 +80,7 @@ class RecentFilesManager():
         for i in lines:
             self.q.append(i.strip())
         self.file.close()
+        return
 
     def add_recent_menu(self):
         if self.menu == None:
@@ -56,6 +89,7 @@ class RecentFilesManager():
         for i in self.q:
             self.menu.add_command(label=i, command=lambda: self.FileMenu._load_gr_file(i))
         self.FileMenu.fm.add_cascade(label="Recent Gr File", menu=self.menu)
+        return
 
         # print(self.q)
 
@@ -102,7 +136,14 @@ class FileMenu():
                     filetypes=filetypes)
 
 
-            self.RFM.add(file_path)
+            # self.RFM.add(file_path)
+            if os.path.exists(file_path) == True:
+                self.RFM.add(file_path)
+            else:
+                file_missing_error = "The following file is missing:\n" + file_path
+                messagebox.showerror("File Missing", file_missing_error)
+                self.RFM.delete(file_path)
+                return
 
             start = timeit.default_timer()
             self.line_container.load_and_plot(path=file_path)

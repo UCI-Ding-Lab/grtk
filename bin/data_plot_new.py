@@ -12,41 +12,14 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import main
 
-class single_line(object):
-    def __init__(self, cords: list[load.anchor], file_path: str):
-        """single line object is the object for a single file path
-        a single file path may contain up to one line
-        this object has the lines cordinates in a list of anchor object
-        it also has the full file path, drawing preference, seperate cords, etc.
-
-        Args:
-            cords (list[load.anchor]): list of anchor objects
-            file_path (str): full file path
-        """
-        # single line cords in anchor object
-        self.cord: list[load.anchor] = cords
-        self.file_path = file_path
-        self.parameters = dict(
-            linewidth=0.5,
-            color="black",
-        )
-        # single line y cords
-        self.abs_cords_y = [float(i.y) for i in cords]
-        # single line x cords
-        self.abs_cords_x = [float(i.x) for i in cords]
-        
-    def set_parameters(self, new_parameters: dict):
-        self.parameters = new_parameters
-
 class line_container(object):
     def __init__(self, gui: "main.GUI"):
         self.gui: "main.GUI" = gui
         self.frame: tkinter.Frame = self.gui.line_frame
         # containers
-        self.container: list[single_line] = []
-        self.garbage: list[single_line] = []
-        # file loader object
-        self.loader = load.read_gr_file()
+        self.container: list[load.single_line] = []
+        self.garbage: list[load.single_line] = []
+        
         self._figure_initialization()
     
     def _figure_initialization(self) -> None:
@@ -79,9 +52,7 @@ class line_container(object):
                 y_cords = i.abs_cords_y
                 break
         if not in_garbage:
-            self.loader.read_file(path)
-            anchor_container = self.loader.get_result()
-            path_object = single_line(anchor_container, path)
+            path_object = load.read_file(path)
             x_cords = path_object.abs_cords_x
             y_cords = path_object.abs_cords_y
             self.gui.layer_ctl.add_layer(path)

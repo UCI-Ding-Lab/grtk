@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 class layers(object):
     def __init__(self, frame: tkinter.Frame, lines: "data_plot_new.line_container"):
+        self.select_status: dict[str,tkinter.IntVar] = dict()
         self.frame = frame
         self.lines = lines
     
@@ -30,22 +31,14 @@ class layers(object):
         head, tail = os.path.split(path)
         # initial the checkbox value
         attri = tkinter.IntVar()
-        attri.set(1)
         # create checkbox and color button
         new_layer = tkinter.Checkbutton(
             single_layer_frame,
             text=tail,
-            variable=attri,
-            # if value is 0 hide else show
-            command=lambda: self.hide_on_graph(path) if not attri.get() else self.show_on_graph(path)
-        )
-        color_button = tkinter.Button(
-            single_layer_frame,
-            text="Color",
-            command=lambda: self.change_color(path)
+            variable=attri
         )
         new_layer.pack(side="left")
-        color_button.pack(side="right")
+        self.select_status[path] = attri
     
     def hide_on_graph(self, path: str):
         self.lines.remove_line(path)

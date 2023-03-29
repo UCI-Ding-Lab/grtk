@@ -13,7 +13,6 @@ from menus import treatment_menu
 from menus import test_menu
 from bin import data_plot_new
 from bin import keyboard_events
-from bin import layer_control
 
 def do_nothing():
     pass
@@ -27,7 +26,6 @@ class GUI:
         self.menu_bar = tkinter.Menu(root)
         self._init_frames()
         self.container = data_plot_new.line_container(gui=self)
-        self.layer_ctl = layer_control.layers(self.rightframe, self.container)
         self._window()
         self._menu_bar_main()
         root.config(menu=self.menu_bar)
@@ -41,11 +39,6 @@ class GUI:
         """
         self.leftframe = tkinter.Frame(self.root)
         self.leftframe.pack(fill=tkinter.BOTH, expand=1, side="left")
-        tkinter.ttk.Separator(self.root, orient=tkinter.VERTICAL).pack(fill="y", side="left")
-        self.rightframe = tkinter.Frame(self.root)
-        self.rightframe.pack(fill="y", expand=1, side="left")
-        tkinter.Label(self.rightframe, text="Layers", bg='yellow').pack(side="top")
-
         self.line_frame = tkinter.Frame(self.leftframe)
 
     def _window(self):

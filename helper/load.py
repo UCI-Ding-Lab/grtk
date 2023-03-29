@@ -1,3 +1,5 @@
+import tkinter
+
 class single_line(object):
     def __init__(self, cords: list[tuple[float,float]], file_path: str):
         """single line object is the object for a single file path
@@ -11,10 +13,13 @@ class single_line(object):
         """
         # single line cords in anchor object
         self.cord = cords
+        self.show = tkinter.IntVar()
+        self.show.set(0)
         self.file_path = file_path
         self.parameters = dict(
             linewidth=0.5,
             color="black",
+            label=file_path,
         )
         # single line xy cords
         self.abs_cords_y = [i[1] for i in cords]

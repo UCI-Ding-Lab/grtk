@@ -6,7 +6,7 @@ import os
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    import data_plot_new
+    from bin import data_plot_new
 
 class layers(object):
     def __init__(self, frame: tkinter.Frame, lines: "data_plot_new.line_container"):
@@ -46,19 +46,7 @@ class layers(object):
     def show_on_graph(self, path: str):
         self.lines.load_and_plot(path)
     
-    def change_color(self, path: str):
-        """change the color of a line by ask the color hex code
-        build a update kwargs manually then pass out to change preference
-
-        Args:
-            path (str): full file path
-        """
-        hexcode = colorchooser.askcolor()[1]
-        # build update parameter(s)
-        update_dict = dict(
-            color=hexcode
-        )
-        self.lines.change_line_preference(path, **update_dict)
+    
         
         
         

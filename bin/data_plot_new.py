@@ -44,20 +44,21 @@ class line_container(object):
             path (str): full file path
         """
         in_garbage = False
-        for i in self.garbage:
-            if i.file_path == path:
+        for i, e in enumerate(self.garbage):
+            if e.file_path == path:
+                path_object = e
+                x_cords = e.abs_cords_x
+                y_cords = e.abs_cords_y
+                self.garbage.pop(i)
                 in_garbage = True
-                path_object = i
-                x_cords = i.abs_cords_x
-                y_cords = i.abs_cords_y
                 break
         if not in_garbage:
             path_object = load.read_file(path)
             x_cords = path_object.abs_cords_x
             y_cords = path_object.abs_cords_y
-            self.gui.layer_ctl.add_layer(path)
             
         self.matplot_subplot.plot(*[x_cords, y_cords], **path_object.parameters)
+        path_object.show.set(1)
         self.container.append(path_object)
         self._refresh_canvas()
     
@@ -71,27 +72,33 @@ class line_container(object):
         Args:
             path (str): full file path
         """
-        counter = 0
-        target: int = None
+        target_obj: load.single_line = None
         for i in self.container:
             if i.file_path == path:
-                target = counter
+                target_obj = i
                 break
-            counter += 1
+        
+        target: int = None
+        for i in self.matplot_subplot.get_lines():
+            if i.get_label() == path:
+                target = self.matplot_subplot.lines.index(i)
+                break
         self.matplot_subplot.lines.pop(target)
         
         found = False
         for i in self.garbage:
             if i.file_path == path:
+                i.show.set(0)
                 found = True
                 break
         if not found:
-            self.garbage.append(self.container[counter])
-
-        self.container.pop(counter)
+            target_obj.show.set(0)
+            self.garbage.append(target_obj)
+        
+        self.container.pop(self.container.index(target_obj))
         self._refresh_canvas()
     
-    def change_line_preference(self, path: str, **kwargs: dict) -> None:
+    def change_line_preference(self, path: str, kwargs: dict) -> None:
         """change line preference according to content in dictionary
         find the single line object that need to change preference in the container
         get the line Axes from subplot and update configs
@@ -100,16 +107,15 @@ class line_container(object):
         Args:
             path (str): full file path
         """
-        counter = 0
-        target: int = None
-        for i in self.container:
+        for i in self.container+self.garbage:
             if i.file_path == path:
-                target = counter
                 for updated_key, updated_val in kwargs.items():
-                    self.container[target].parameters[updated_key] = updated_val
+                    i.parameters[updated_key] = updated_val
                 break
-            counter += 1
-        self.matplot_subplot.get_lines()[target].update(kwargs)
+        
+        for i in self.matplot_subplot.get_lines():
+            if i.get_label() == path:
+                i.update(kwargs)
         self._refresh_canvas()
     
     def _refresh_canvas(self) -> None:
@@ -153,3 +159,9 @@ class line_container(object):
             xmin=self.matplot_subplot.get_xlim()[0]+xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]-xrange/4)
         self.tk_canvas.draw()
+    
+    def get_single_line_object(self, path: str) -> load.single_line:
+        for i in self.container:
+            if i.file_path == path:
+                return i
+        return None

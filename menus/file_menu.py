@@ -140,6 +140,8 @@ class FileMenu():
             if os.path.exists(file_path) == True:
                 self.RFM.add(file_path)
             else:
+                if file_path == '':
+                    return
                 file_missing_error = "The following file is missing:\n" + file_path
                 messagebox.showerror("File Missing", file_missing_error)
                 self.RFM.delete(file_path)

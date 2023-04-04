@@ -3,6 +3,7 @@ import tkinter
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from time import time
 
 # file
 from helper import load
@@ -16,10 +17,9 @@ class line_container(object):
     def __init__(self, gui: "main.GUI"):
         self.gui: "main.GUI" = gui
         self.frame: tkinter.Frame = self.gui.line_frame
-        # containers
-        self.container: list[load.single_line] = []
-        self.garbage: list[load.single_line] = []
         
+        # containers
+        self.container: dict[str,load.single_line] = dict()
         self._figure_initialization()
     
     def _figure_initialization(self) -> None:
@@ -33,90 +33,62 @@ class line_container(object):
         self.frame.pack(fill=tkinter.BOTH, expand=1)
     
     def load_and_plot(self, path: str) -> None:
-        """Load line by path.
-        get path and build a single line object
-        draw single line object on the canvas
-        add single line object to container
-        add single line to edit menu
-        refresh canvas
+        """load and plot a line
+        if line is already loaded, raise error
+        if not, load line and plot it on canvas
+        build then append line_object to container
 
         Args:
-            path (str): full file path
+            path (str): full path of line
+
+        Raises:
+            ValueError: line already loaded
         """
-        in_garbage = False
-        for i, e in enumerate(self.garbage):
-            if e.file_path == path:
-                path_object = e
-                x_cords = e.abs_cords_x
-                y_cords = e.abs_cords_y
-                self.garbage.pop(i)
-                in_garbage = True
-                break
-        if not in_garbage:
-            path_object = load.read_file(path)
-            x_cords = path_object.abs_cords_x
-            y_cords = path_object.abs_cords_y
-            
-        self.matplot_subplot.plot(*[x_cords, y_cords], **path_object.parameters)
-        path_object.show.set(1)
-        self.container.append(path_object)
+        # start timer
+        start_time = time()
+        
+        # check if line already loaded
+        # if yes, raise error
+        if path in self.container.keys():
+            raise ValueError("line already loaded")
+        
+        # if not, load line
+        l: load.single_line = load.read_file(path)
+        x_cords: list[float] = l.abs_cords_x
+        y_cords: list[float] = l.abs_cords_y
+        
+        # plot line on canvas, finishing building line_object by appending line2d_object
+        # if this is unclear, refer to load.py for more information
+        temp, = self.matplot_subplot.plot(*[x_cords, y_cords], **l.parameters)
+        l.line2d_object.append(temp)
+        
+        # add line_object to container, key is full path
+        self.container[l.nick] = l
+        
+        # refresh canvas and stop timer
         self._refresh_canvas()
+        end_time = time()
+        print("[GRTK] graph loaded: ", round((end_time-start_time)*1000, 2), "ms")
     
-    def remove_line(self, path: str) -> None:
-        """Remove line from the graph
-        get path and find the index of single line obeject in the container
-        use index to pop the line by index in Axes
-        use path to remove from menu
-        put the deleted single line object in garbage container for future use
-
-        Args:
-            path (str): full file path
-        """
-        target_obj: load.single_line = None
-        for i in self.container:
-            if i.file_path == path:
-                target_obj = i
-                break
-        
-        target: int = None
-        for i in self.matplot_subplot.get_lines():
-            if i.get_label() == path:
-                target = self.matplot_subplot.lines.index(i)
-                break
-        self.matplot_subplot.lines.pop(target)
-        
-        found = False
-        for i in self.garbage:
-            if i.file_path == path:
-                i.show.set(0)
-                found = True
-                break
-        if not found:
-            target_obj.show.set(0)
-            self.garbage.append(target_obj)
-        
-        self.container.pop(self.container.index(target_obj))
-        self._refresh_canvas()
     
     def change_line_preference(self, path: str, kwargs: dict) -> None:
-        """change line preference according to content in dictionary
-        find the single line object that need to change preference in the container
-        get the line Axes from subplot and update configs
-        update line objects in the line container
-        
+        """update line preference from kwargs
+        get line_object from container, update line2d_object[0] with kwargs
+
         Args:
-            path (str): full file path
+            path (str): full path of line
+            kwargs (dict): parameters to update
         """
-        for i in self.container+self.garbage:
-            if i.file_path == path:
-                for updated_key, updated_val in kwargs.items():
-                    i.parameters[updated_key] = updated_val
-                break
+        # start timer
+        start_time = time()
         
-        for i in self.matplot_subplot.get_lines():
-            if i.get_label() == path:
-                i.update(kwargs)
+        # update line preference
+        self.container[path].line2d_object[0].update(kwargs)
+        
+        # refresh canvas and stop timer
         self._refresh_canvas()
+        end_time = time()
+        print("[GRTK] pref changed: ", round((end_time-start_time)*1000, 2), "ms")
     
     def _refresh_canvas(self) -> None:
         """refresh canvas after make any changes
@@ -131,6 +103,7 @@ class line_container(object):
         self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
         self.tk_toolbar.update()
         self.frame.pack(fill=tkinter.BOTH, expand=1)
+        self.matplot_subplot.legend()
     
     def view_shift_left(self) -> None:
         xrange = self.matplot_subplot.get_xlim()[1] - self.matplot_subplot.get_xlim()[0]
@@ -159,9 +132,3 @@ class line_container(object):
             xmin=self.matplot_subplot.get_xlim()[0]+xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]-xrange/4)
         self.tk_canvas.draw()
-    
-    def get_single_line_object(self, path: str) -> load.single_line:
-        for i in self.container:
-            if i.file_path == path:
-                return i
-        return None

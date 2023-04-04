@@ -45,7 +45,7 @@ class GUI:
         """set title and window size
         """
         self.root.title('Data Visualization Software')
-        self.root.geometry("1150x700")
+        self.root.geometry("1150x800")
     
     def _menu_bar_main(self):
         """initializations of each tool bar selection

@@ -1,7 +1,8 @@
-import tkinter
+from matplotlib import lines
+import pathlib
 
 class single_line(object):
-    def __init__(self, cords: list[tuple[float,float]], file_path: str):
+    def __init__(self, cords: list[tuple[float,float]], file_path: str, x: list[float], y: list[float]):
         """single line object is the object for a single file path
         a single file path may contain up to one line
         this object has the lines cordinates in a list of anchor object
@@ -11,22 +12,27 @@ class single_line(object):
             cords (list[load.anchor]): list of anchor objects
             file_path (str): full file path
         """
-        # single line cords in anchor object
-        self.cord = cords
-        self.show = tkinter.IntVar()
-        self.show.set(0)
-        self.file_path = file_path
+        # nick stands for filename with extension
+        self.nick = pathlib.Path(file_path).name
+        
+        # matplotlib line2d object
+        # the reason why it is a list is because line2d object need to be passed by reference
+        # and it is not possible to pass by reference in python by assigning a variable
+        # so we need to use a list to store the line2d object
+        # usage: self.line2d_object[0] to get the line2d object
+        self.line2d_object: list[lines.Line2D] = []
+        
+        # drawing preference
         self.parameters = dict(
             linewidth=0.5,
             color="black",
-            label=file_path,
+            label=self.nick,
         )
-        # single line xy cords
-        self.abs_cords_y = [i[1] for i in cords]
-        self.abs_cords_x = [i[0] for i in cords]
         
-    def set_parameters(self, new_parameters: dict) -> None:
-        self.parameters = new_parameters
+        # cords
+        self.cord = cords
+        self.abs_cords_y = y
+        self.abs_cords_x = x
 
 def read_file(dir: str) -> single_line:
     """read file from path and build a single_line object
@@ -38,9 +44,13 @@ def read_file(dir: str) -> single_line:
         single_line: single line object reference
     """
     container = []
+    x = []
+    y = []
     with open(dir, "r") as target:
             temp = target.read().splitlines()
             for i in temp:
                 container.append((float(i.split(" ")[0]),float(i.split(" ")[1])))
-    return single_line(container, dir)
+                x.append(float(i.split(" ")[0]))
+                y.append(float(i.split(" ")[1]))
+    return single_line(container, dir, x, y)
     

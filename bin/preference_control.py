@@ -2,6 +2,8 @@ import tkinter
 from tkinter import ttk
 from tkinter import colorchooser
 
+from helper import markerlib
+
 
 # typecheck
 from typing import TYPE_CHECKING
@@ -33,12 +35,16 @@ class perf_ctl(object):
             "show": False,
             "color": False,
             "width": False,
+            "marker": False,
+            "marker_size": False,
+            "marker_color": False,
         }
         
         # changes variables
         self.show_var = tkinter.IntVar()
         self.color_var = tkinter.StringVar()
         self.width_var = tkinter.DoubleVar()
+        self.marker_size_var = tkinter.DoubleVar()
         
         # pop up window initialization
         self.pop_up = tkinter.Toplevel(self.GUI.root)
@@ -62,6 +68,16 @@ class perf_ctl(object):
         self.sep2 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
         self.pref_width_preview = tkinter.Canvas(self.pref_frame, width=50, height=10)
         self.pref_width = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=0.1 ,command=self.change_width ,textvariable=self.width_var)
+        self.sep3 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
+        self.pref_marker_txt = tkinter.Label(self.pref_frame, text="Marker")
+        self.pref_marker = ttk.Combobox(self.pref_frame, values=list(markerlib.MARKERS.keys()), state="readonly")
+        self.pref_marker.bind("<<ComboboxSelected>>", self.change_marker)
+        self.sep4 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
+        self.pref_marker_size_txt = tkinter.Label(self.pref_frame, text="Marker Size")
+        self.pref_marker_size = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=0.1 ,command=self.change_marker_size ,textvariable=self.marker_size_var)
+        self.sep5 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
+        self.pref_marker_color_preview = tkinter.Label(self.pref_frame, text="__")
+        self.pref_marker_color = tkinter.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
         
         # build save and quit button
         tkinter.Button(self.pop_up, text="Save & Quit", command=self.quit_pop_up).pack(side=tkinter.BOTTOM, anchor="e")
@@ -77,6 +93,16 @@ class perf_ctl(object):
         self.sep2.grid(row=3, column=0, columnspan=2, sticky="ew", pady=5)
         self.pref_width_preview.grid(row=4, column=0)
         self.pref_width.grid(row=4, column=1)
+        self.sep3.grid(row=5, column=0, columnspan=2, sticky="ew", pady=5)
+        self.pref_marker_txt.grid(row=6, column=0)
+        self.pref_marker.grid(row=6, column=1)
+        self.sep4.grid(row=7, column=0, columnspan=2, sticky="ew", pady=5)
+        self.pref_marker_size_txt.grid(row=8, column=0)
+        self.pref_marker_size.grid(row=8, column=1)
+        self.sep5.grid(row=9, column=0, columnspan=2, sticky="ew", pady=5)
+        self.pref_marker_color_preview.grid(row=10, column=0)
+        self.pref_marker_color.grid(row=10, column=1)
+        
     
     def unpack_all(self):
         """unpack all widgets
@@ -89,6 +115,15 @@ class perf_ctl(object):
         self.sep2.grid_forget()
         self.pref_width_preview.grid_forget()
         self.pref_width.grid_forget()
+        self.sep3.grid_forget()
+        self.pref_marker_txt.grid_forget()
+        self.pref_marker.grid_forget()
+        self.sep4.grid_forget()
+        self.pref_marker_size_txt.grid_forget()
+        self.pref_marker_size.grid_forget()
+        self.sep5.grid_forget()
+        self.pref_marker_color_preview.grid_forget()
+        self.pref_marker_color.grid_forget()
     
     def build_pref_options(self, event):
         """this is a callback function for the combobox
@@ -112,6 +147,9 @@ class perf_ctl(object):
         self.width_var.set(self.target_line2d.get_linewidth())
         self.pref_width_preview.delete("all")
         self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
+        self.pref_marker.set(markerlib.MARKERS_R[self.target_line2d.get_marker()])
+        self.marker_size_var.set(self.target_line2d.get_markersize())
+        self.pref_marker_color_preview.configure(bg=self.target_line2d.get_markerfacecolor(), fg=self.target_line2d.get_markerfacecolor())
         
         # build new options
         self.pack_all()
@@ -137,20 +175,71 @@ class perf_ctl(object):
         self.pref_width_preview.delete("all")
         self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
     
+    def change_marker_size(self):
+        """record change in marker size variable
+        """
+        self.changes["marker_size"] = True
+    
+    def change_marker(self, event):
+        """record change in marker variable
+        """
+        self.changes["marker"] = True
+    
+    def change_marker_color(self):
+        """record change in marker color variable
+        """
+        self.changes["marker_color"] = True
+        self.marker_color_var = colorchooser.askcolor()[1]
+        self.pref_marker_color_preview.configure(bg=self.marker_color_var, fg=self.marker_color_var)
+    
     def quit_pop_up(self):
         """destory pop up window
         then save changes by calling container.change_line_preference
         """
+        # save changes to container
+        if self.changes["color"]:
+            self.GUI.container.change_line_preference(
+                self.target_path, 
+                {"color": self.color_var}
+            )
+        
+        if self.changes["show"]:
+            self.GUI.container.change_line_preference(
+                self.target_path, 
+                {"visible": self.show_var.get()}
+            )
+        
+        if self.changes["width"]:
+            self.GUI.container.change_line_preference(
+                self.target_path, 
+                {"linewidth": self.width_var.get()}
+            )
+        
+        if self.changes["marker"]:
+            self.GUI.container.change_line_preference(
+                self.target_path, 
+                {"marker": markerlib.MARKERS[self.pref_marker.get()]}
+            )
+        
+        if self.changes["marker_size"]:
+            self.GUI.container.change_line_preference(
+                self.target_path, 
+                {"markersize": self.marker_size_var.get()}
+            )
+        
+        if self.changes["marker_color"]:
+            self.GUI.container.change_line_preference(
+                self.target_path, 
+                {"markerfacecolor": self.marker_color_var}
+            )
+            self.GUI.container.change_line_preference(
+                self.target_path, 
+                {"markeredgecolor": self.marker_color_var}
+            )
+        
         # destroy pop up window
         self.pop_up.destroy()
         self.pop_up.update()
         
-        # save changes to container
-        if self.changes["color"]:
-            self.GUI.container.change_line_preference(self.target_path, {"color": self.color_var})
         
-        if self.changes["show"]:
-            self.GUI.container.change_line_preference(self.target_path, {"visible": self.show_var.get()})
         
-        if self.changes["width"]:
-            self.GUI.container.change_line_preference(self.target_path, {"linewidth": self.width_var.get()})

@@ -1,0 +1,28 @@
+MARKERS = {
+        "point": ".",
+        "pixel": ",",
+        "circle": "o",
+        "triangle down": "v",
+        "triangle up": "^",
+        "triangle left": "<",
+        "triangle right": ">",
+        "tri down": "1",
+        "tri up": "2",
+        "tri left": "3",
+        "tri right": "4",
+        "octagon": "8",
+        "square": "s",
+        "pentagon": "p",
+        "star": "*",
+        "hexagon1": "h",
+        "hexagon2": "H",
+        "plus": "+",
+        "x": "x",
+        "diamond": "D",
+        "thin diamond": "d",
+        "vline": "|",
+        "hline": "_",
+        "none": "None",
+    }
+
+MARKERS_R = dict([reversed(i) for i in MARKERS.items()])

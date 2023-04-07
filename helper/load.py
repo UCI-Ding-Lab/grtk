@@ -25,7 +25,7 @@ class single_line(object):
         # drawing preference
         self.parameters = dict(
             linewidth=0.5,
-            color="black",
+            color="white",
             label=self.nick,
         )
         

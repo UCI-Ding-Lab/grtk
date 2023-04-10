@@ -1,8 +1,9 @@
 from matplotlib import lines
+import numpy
 import pathlib
 
 class single_line(object):
-    def __init__(self, cords: list[tuple[float,float]], file_path: str, x: list[float], y: list[float]):
+    def __init__(self, name: str, cords: list[list[float]]):
         """single line object is the object for a single file path
         a single file path may contain up to one line
         this object has the lines cordinates in a list of anchor object
@@ -13,7 +14,7 @@ class single_line(object):
             file_path (str): full file path
         """
         # nick stands for filename with extension
-        self.nick = pathlib.Path(file_path).name
+        self.nick = name
         
         # matplotlib line2d object
         # the reason why it is a list is because line2d object need to be passed by reference
@@ -23,18 +24,44 @@ class single_line(object):
         self.line2d_object: list[lines.Line2D] = []
         
         # drawing preference
-        self.parameters = dict(
-            linewidth=0.5,
-            color="white",
-            label=self.nick,
-        )
+        self.curve_type = name.split(" ")[1]
+        if self.curve_type == "system":
+            self.parameters = dict(
+                linewidth=0.5,
+                color="yellow",
+                label=self.nick,
+            )
+        elif self.curve_type == "background":
+            self.parameters = dict(
+                linewidth=0.5,
+                color="green",
+                label=self.nick,
+            )
+        elif self.curve_type == "data":
+            self.parameters = dict(
+                linewidth=0.0,
+                color="red",
+                label=self.nick,
+                marker=".",
+                markersize=2.8,
+            )
+        else:
+            self.parameters = dict(
+                linewidth=0.5,
+                color="white",
+                label=self.nick,
+            )
         
         # cords
-        self.cord = cords
-        self.abs_cords_y = y
-        self.abs_cords_x = x
+        self.abs_cords_x = cords[0]
+        self.abs_cords_y = cords[1]
+        # self.mean = numpy.mean(self.abs_cords_y)
+        # self.trend = numpy.polyfit(self.abs_cords_x, self.abs_cords_y, 1)
+        # self.trendline_y = numpy.poly1d(self.trend)
+        # self.trendline_x = numpy.array(self.abs_cords_x)
+        
 
-def read_file(dir: str) -> single_line:
+def read_file(dir: str) -> list[list[str]]:
     """read file from path and build a single_line object
 
     Args:
@@ -43,14 +70,24 @@ def read_file(dir: str) -> single_line:
     Returns:
         single_line: single line object reference
     """
-    container = []
-    x = []
-    y = []
+    
     with open(dir, "r") as target:
-            temp = target.read().splitlines()
-            for i in temp:
-                container.append((float(i.split(" ")[0]),float(i.split(" ")[1])))
-                x.append(float(i.split(" ")[0]))
-                y.append(float(i.split(" ")[1]))
-    return single_line(container, dir, x, y)
+        all_data = target.read()
+        layers_raw = all_data.split("\n----------\n")
+        layers_data = dict()
+        for i in layers_raw:
+            temp = i.split("\n")
+            curve_x = []
+            curve_y = []
+            if " " in temp[1]:
+                for o in temp[1:]:
+                    curve_x.append(float(o.split(" ")[0]))
+                    curve_y.append(float(o.split(" ")[1]))
+            else:
+                for index, val in enumerate(temp[1:]):
+                    curve_x.append(float(index))
+                    curve_y.append(float(val))
+            cords = [curve_x, curve_y]
+            layers_data[f"{pathlib.Path(dir).name} {temp[0]}"] = cords
+        return layers_data
     

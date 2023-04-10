@@ -1,5 +1,7 @@
 import sqlite3
 from sqlite3 import Error
+import pathlib
+
 """
     Useful Commands:
         PRAGMA table_info(table_name);
@@ -25,7 +27,7 @@ def create_connection(db_file):
     return conn
 
 
-def create_table(conn, create_table_sql):
+def create_table(conn: sqlite3.Connection, create_table_sql):
     """ create a table from the create_table_sql statement
     :param conn: Connection object
     :param create_table_sql: a CREATE TABLE statement
@@ -39,7 +41,10 @@ def create_table(conn, create_table_sql):
 
 
 def main():
-    database = r"tests/db/pythonsqlite.db"
+    DB_PATH = pathlib.Path("tests/db/grtk.db")
+    if not DB_PATH.exists():
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        DB_PATH.touch()
 
     # sql_create_projects_table = """ CREATE TABLE IF NOT EXISTS projects (
     #                                     id integer PRIMARY KEY,
@@ -82,7 +87,7 @@ def main():
         """
 
     # create a database connection
-    conn = create_connection(database)
+    conn = create_connection(DB_PATH)
 
     # create tables
     if conn is not None:

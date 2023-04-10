@@ -13,6 +13,7 @@ from menus import treatment_menu
 from menus import test_menu
 from bin import data_plot_new
 from bin import keyboard_events
+from bin import preference_control
 
 def do_nothing():
     pass
@@ -26,6 +27,7 @@ class GUI:
         self.menu_bar = tkinter.Menu(root)
         self._init_frames()
         self.container = data_plot_new.line_container(gui=self)
+        self.pref = preference_control.perf_ctl(self)
         self._window()
         self._menu_bar_main()
         root.config(menu=self.menu_bar)
@@ -37,15 +39,21 @@ class GUI:
         left frame contains the graph itself
         right frame contains the layer control and preference control
         """
-        self.leftframe = tkinter.Frame(self.root)
-        self.leftframe.pack(fill=tkinter.BOTH, expand=1, side="left")
-        self.line_frame = tkinter.Frame(self.leftframe)
-
+        self.graph_frame = tkinter.Frame(self.root)
+        self.graph_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.LEFT)
+        self.line_frame = tkinter.Frame(self.graph_frame)
+        self.right_frame = tkinter.Frame(self.root)
+        self.right_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.RIGHT)
+        self.curve_pref_frame = tkinter.Frame(self.right_frame)
+        self.curve_pref_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.TOP)
+        self.global_pref_frame = tkinter.Frame(self.right_frame)
+        self.global_pref_frame.pack(fill=tkinter.X, side=tkinter.BOTTOM)
+        
     def _window(self):
         """set title and window size
         """
         self.root.title('Data Visualization Software')
-        self.root.geometry("1150x800")
+        self.root.geometry("1125x800")
     
     def _menu_bar_main(self):
         """initializations of each tool bar selection

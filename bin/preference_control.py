@@ -29,38 +29,125 @@ class perf_ctl(object):
         # private variables
         self.pack_stat: bool = False
         
-        # True if any changes made
-        # use to determine if save is needed
-        self.changes: dict[str,bool] = {
-            "show": False,
-            "color": False,
-            "width": False,
-            "marker": False,
-            "marker_size": False,
-            "marker_color": False,
-        }
-        
         # changes variables
         self.show_var = tkinter.IntVar()
         self.color_var = tkinter.StringVar()
         self.width_var = tkinter.DoubleVar()
         self.marker_size_var = tkinter.DoubleVar()
+        self.show_grid_var = tkinter.IntVar()
+        self.show_axis_var = tkinter.IntVar()
+        self.show_label_var = tkinter.IntVar()
+        self.show_legend_var = tkinter.IntVar()
+        self.dark_mode_var = tkinter.IntVar()
         
-        # pop up window initialization
-        self.pop_up = tkinter.Toplevel(self.GUI.root)
-        self.pop_up.geometry("300x500")
-        self.pop_up.title("Edit Preference")
+        # structure initialization
+        self.structure = self.GUI.curve_pref_frame
+        
+        # glb status init
+        # check gird visibility
+        self.show_grid_var.set(1)
+        self.show_axis_var.set(1)
+        self.show_label_var.set(1)
+        self.show_legend_var.set(1)
+        self.dark_mode_var.set(1)
         
         # get a list of all the file paths
         possible_files = list(self.container.keys())
         
         # build combobox line selector
-        self.select_box = ttk.Combobox(self.pop_up, values=possible_files, state="readonly")
+        self.select_box = ttk.Combobox(self.structure, values=possible_files, state="readonly")
         self.select_box.bind("<<ComboboxSelected>>", self.build_pref_options)
-        self.select_box.pack()
+        self.select_box.pack(fill=tkinter.X)
         
-        # build preference options
-        self.pref_frame = tkinter.LabelFrame(self.pop_up, text="Set preference for selected file")
+        # build preference widgets
+        self.build_pref_widgets()
+        
+        # build global preference widgets
+        self.build_glb_options()
+    
+    def build_glb_options(self):
+        self.glb_pref = tkinter.LabelFrame(self.GUI.global_pref_frame, text="Global preference", padx=5)
+        self.show_grid = tkinter.Checkbutton(self.glb_pref, text="Show grid", variable=self.show_grid_var, command=self.change_show_grid)
+        self.show_axis = tkinter.Checkbutton(self.glb_pref, text="Show axis", variable=self.show_axis_var, command=self.change_show_axis)
+        self.show_label = tkinter.Checkbutton(self.glb_pref, text="Show label", variable=self.show_label_var, command=self.change_show_label)
+        self.show_legend = tkinter.Checkbutton(self.glb_pref, text="Show legend", variable=self.show_legend_var, command=self.change_show_legend)
+        self.dark_mode = tkinter.Checkbutton(self.glb_pref, text="Dark mode", variable=self.dark_mode_var, command=self.change_dark_mode)
+        
+        self.glb_pref.pack(fill=tkinter.BOTH, expand=True, padx=10)
+        self.show_grid.grid(row=0, column=0, sticky=tkinter.W)
+        self.show_axis.grid(row=0, column=1, sticky=tkinter.W)
+        self.show_label.grid(row=0, column=2, sticky=tkinter.W)
+        self.show_legend.grid(row=1 ,column=0, sticky=tkinter.W)
+        self.dark_mode.grid(row=1, column=1, sticky=tkinter.W)
+    
+    def change_show_grid(self):
+        if self.show_grid_var.get() == 1:
+            self.GUI.container.matplot_subplot.grid(color="grey", visible=True)
+        else:
+            self.GUI.container.matplot_subplot.grid(False)
+        self.glb_make_changes()
+    
+    def change_show_axis(self):
+        if self.show_axis_var.get() == 1:
+            self.GUI.container.matplot_subplot.axis("on")
+        else:
+            self.GUI.container.matplot_subplot.axis("off")
+        self.glb_make_changes()
+    
+    def change_show_label(self):
+        if self.show_label_var.get() == 1:
+            self.GUI.container.matplot_subplot.set_xlabel("Time")
+            self.GUI.container.matplot_subplot.set_ylabel("Position")
+        else:
+            self.GUI.container.matplot_subplot.set_xlabel("")
+            self.GUI.container.matplot_subplot.set_ylabel("")
+        self.glb_make_changes()
+    
+    def change_show_legend(self):
+        if self.show_legend_var.get() == 1:
+            self.glb_make_changes()
+        else:
+            if not self.GUI.container.matplot_subplot.get_legend():
+                pass
+            else:
+                self.GUI.container.matplot_subplot.get_legend().remove()
+            self.glb_make_changes(no_leg=True)
+    
+    def change_dark_mode(self):
+        if self.dark_mode_var.get() == 1:
+            self.GUI.container.matplot_figure.set_facecolor("black")
+            self.GUI.container.matplot_subplot.set_facecolor("black")
+            self.GUI.container.matplot_subplot.tick_params(axis="x", colors="white")
+            self.GUI.container.matplot_subplot.tick_params(axis="y", colors="white")
+            self.GUI.container.matplot_subplot.set_xlabel("Time", color="white")
+            self.GUI.container.matplot_subplot.set_ylabel("Position", color="white")
+            self.GUI.container.matplot_subplot.spines["bottom"].set_color("white")
+            self.GUI.container.matplot_subplot.spines["top"].set_color("white")
+            self.GUI.container.matplot_subplot.spines["left"].set_color("white")
+            self.GUI.container.matplot_subplot.spines["right"].set_color("white")
+        else:
+            self.GUI.container.matplot_figure.set_facecolor("white")
+            self.GUI.container.matplot_subplot.set_facecolor("white")
+            self.GUI.container.matplot_subplot.tick_params(axis="x", colors="black")
+            self.GUI.container.matplot_subplot.tick_params(axis="y", colors="black")
+            self.GUI.container.matplot_subplot.set_xlabel("Time", color="black")
+            self.GUI.container.matplot_subplot.set_ylabel("Position", color="black")
+            self.GUI.container.matplot_subplot.spines["bottom"].set_color("black")
+            self.GUI.container.matplot_subplot.spines["top"].set_color("black")
+            self.GUI.container.matplot_subplot.spines["left"].set_color("black")
+            self.GUI.container.matplot_subplot.spines["right"].set_color("black")
+        self.glb_make_changes()
+    
+    def glb_make_changes(self, no_leg=False):
+        if no_leg:
+            self.GUI.container._refresh_canvas(refresh_legend=False)
+        elif len(list(self.GUI.container.container.keys())) == 0:
+            self.GUI.container._refresh_canvas(refresh_legend=False)
+        else:
+            self.GUI.container._refresh_canvas()
+    
+    def build_pref_widgets(self):
+        self.pref_frame = tkinter.LabelFrame(self.structure, text="Set preference for selected file", padx=7)
         self.pref_show_line = tkinter.Checkbutton(self.pref_frame, text="Show on graph", variable=self.show_var, command=self.change_show)
         self.sep1 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
         self.pref_color_preview = tkinter.Label(self.pref_frame, text="__")
@@ -78,18 +165,15 @@ class perf_ctl(object):
         self.sep5 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
         self.pref_marker_color_preview = tkinter.Label(self.pref_frame, text="__")
         self.pref_marker_color = tkinter.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
-        
-        # build save and quit button
-        tkinter.Button(self.pop_up, text="Save & Quit", command=self.quit_pop_up).pack(side=tkinter.BOTTOM, anchor="e")
     
     def pack_all(self):
         """pack all widgets
         """
-        self.pref_frame.pack(expand=True, fill="y")
+        self.pref_frame.pack(expand=True, fill=tkinter.BOTH, padx=10)
         self.pref_show_line.grid(row=0, column=0, columnspan=2)
         self.sep1.grid(row=1, column=0, columnspan=2, sticky="ew", pady=5)
-        self.pref_color_preview.grid(row=2, column=0)
-        self.pref_color.grid(row=2, column=1)
+        self.pref_color_preview.grid(row=2, column=0, sticky="ew")
+        self.pref_color.grid(row=2, column=1, sticky="ew")
         self.sep2.grid(row=3, column=0, columnspan=2, sticky="ew", pady=5)
         self.pref_width_preview.grid(row=4, column=0)
         self.pref_width.grid(row=4, column=1)
@@ -100,8 +184,8 @@ class perf_ctl(object):
         self.pref_marker_size_txt.grid(row=8, column=0)
         self.pref_marker_size.grid(row=8, column=1)
         self.sep5.grid(row=9, column=0, columnspan=2, sticky="ew", pady=5)
-        self.pref_marker_color_preview.grid(row=10, column=0)
-        self.pref_marker_color.grid(row=10, column=1)
+        self.pref_marker_color_preview.grid(row=10, column=0, sticky="ew")
+        self.pref_marker_color.grid(row=10, column=1, sticky="ew")
         
     
     def unpack_all(self):
@@ -158,88 +242,66 @@ class perf_ctl(object):
     def change_show(self):
         """record change in show variable
         """
-        self.changes["show"] = True
+        self.GUI.container.change_line_preference(
+            self.target_path, 
+            {"visible": self.show_var.get()}
+        )
     
     def change_color(self):
         """record change in color variable
         ask for color and update preview
         """
-        self.changes["color"] = True
         self.color_var = colorchooser.askcolor()[1]
         self.pref_color_preview.configure(bg=self.color_var, fg=self.color_var)
+        self.GUI.container.change_line_preference(
+            self.target_path, 
+            {"color": self.color_var}
+        )
     
     def change_width(self):
         """record change in width variable
         """
-        self.changes["width"] = True
         self.pref_width_preview.delete("all")
         self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
+        self.GUI.container.change_line_preference(
+            self.target_path, 
+            {"linewidth": self.width_var.get()}
+        )
     
     def change_marker_size(self):
         """record change in marker size variable
         """
-        self.changes["marker_size"] = True
+        self.GUI.container.change_line_preference(
+            self.target_path, 
+            {"markersize": self.marker_size_var.get()}
+        )
     
     def change_marker(self, event):
         """record change in marker variable
         """
-        self.changes["marker"] = True
+        self.GUI.container.change_line_preference(
+            self.target_path, 
+            {"marker": markerlib.MARKERS[self.pref_marker.get()]}
+        )
     
     def change_marker_color(self):
         """record change in marker color variable
         """
-        self.changes["marker_color"] = True
         self.marker_color_var = colorchooser.askcolor()[1]
         self.pref_marker_color_preview.configure(bg=self.marker_color_var, fg=self.marker_color_var)
+        self.GUI.container.change_line_preference(
+            self.target_path, 
+            {"markerfacecolor": self.marker_color_var}
+        )
+        self.GUI.container.change_line_preference(
+            self.target_path, 
+            {"markeredgecolor": self.marker_color_var}
+        )
     
-    def quit_pop_up(self):
-        """destory pop up window
-        then save changes by calling container.change_line_preference
+    def refresh(self):
+        """refresh the combobox
         """
-        # save changes to container
-        if self.changes["color"]:
-            self.GUI.container.change_line_preference(
-                self.target_path, 
-                {"color": self.color_var}
-            )
-        
-        if self.changes["show"]:
-            self.GUI.container.change_line_preference(
-                self.target_path, 
-                {"visible": self.show_var.get()}
-            )
-        
-        if self.changes["width"]:
-            self.GUI.container.change_line_preference(
-                self.target_path, 
-                {"linewidth": self.width_var.get()}
-            )
-        
-        if self.changes["marker"]:
-            self.GUI.container.change_line_preference(
-                self.target_path, 
-                {"marker": markerlib.MARKERS[self.pref_marker.get()]}
-            )
-        
-        if self.changes["marker_size"]:
-            self.GUI.container.change_line_preference(
-                self.target_path, 
-                {"markersize": self.marker_size_var.get()}
-            )
-        
-        if self.changes["marker_color"]:
-            self.GUI.container.change_line_preference(
-                self.target_path, 
-                {"markerfacecolor": self.marker_color_var}
-            )
-            self.GUI.container.change_line_preference(
-                self.target_path, 
-                {"markeredgecolor": self.marker_color_var}
-            )
-        
-        # destroy pop up window
-        self.pop_up.destroy()
-        self.pop_up.update()
-        
-        
+        self.select_box["values"] = list(self.container.keys())
+        self.select_box.current(0)
+        self.build_pref_options(None)
         

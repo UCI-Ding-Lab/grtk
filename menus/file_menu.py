@@ -5,7 +5,14 @@ from tkinter import messagebox
 import timeit
 from bin.data_plot_new import line_container
 import os
+import sqlite3
 # from queue import Queue
+
+# typecheck
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import main
+
 
 def do_nothing():
     pass
@@ -99,7 +106,7 @@ class RecentFilesManager():
     #     self.file.close()
 
 class FileMenu():
-    def __init__(self, GUI, container: line_container):
+    def __init__(self, GUI: "main.GUI", container: line_container):
         self.GUI = GUI
         self.line_container = container
 
@@ -123,36 +130,29 @@ class FileMenu():
         self.GUI.menu_bar.add_cascade(label="File", menu=self.fm)
 
     def _load_gr_file(self, file_path=None):
-        try:
-            filetypes = (
-                ('gr files', '*.gr'),
-                ('text files', '*.txt'),
-                ('All files', '*.*')
-            )
-            if file_path == None:
-                file_path = fd.askopenfilename(
-                    title='Open a file',
-                    initialdir='/',
-                    filetypes=filetypes)
+        filetypes = (
+            ('gr files', '*.gr'),
+            ('text files', '*.txt'),
+            ('databases', '*.db'),
+            ('All files', '*.*')
+        )
+        if file_path == None:
+            file_path = fd.askopenfilename(
+                title='Open a file',
+                initialdir='/',
+                filetypes=filetypes)
 
 
-            # self.RFM.add(file_path)
-            if os.path.exists(file_path) == True:
-                self.RFM.add(file_path)
-            else:
-                if file_path == '':
-                    return
-                file_missing_error = "The following file is missing:\n" + file_path
-                messagebox.showerror("File Missing", file_missing_error)
-                self.RFM.delete(file_path)
+        # self.RFM.add(file_path)
+        if os.path.exists(file_path) == True:
+            self.RFM.add(file_path)
+        else:
+            if file_path == '':
                 return
-
-            start = timeit.default_timer()
+            file_missing_error = "The following file is missing:\n" + file_path
+            messagebox.showerror("File Missing", file_missing_error)
+            self.RFM.delete(file_path)
+            return
+        
+        if file_path.endswith(".gr"):
             self.line_container.load_and_plot(path=file_path)
-            stop = timeit.default_timer()
-            if self.GUI.debug_mode:
-                self.GUI.log._log(f'graph loaded, runtime = {stop-start} s')
-        except Exception as e:
-            if self.GUI.debug_mode:
-                self.GUI.log._log("ERROR: "+repr(e))
-            raise e

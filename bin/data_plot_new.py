@@ -4,6 +4,8 @@ from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from time import time
+import numpy
+import pathlib
 
 # file
 from helper import load
@@ -59,24 +61,33 @@ class line_container(object):
         
         # check if line already loaded
         # if yes, raise error
-        if path in self.container.keys():
-            raise ValueError("line already loaded")
+        for i in list(self.container.keys()):
+            if pathlib.Path(path).name in i:
+                raise ValueError("line already loaded")
         
         # if not, load line
-        l: load.single_line = load.read_file(path)
-        x_cords: list[float] = l.abs_cords_x
-        y_cords: list[float] = l.abs_cords_y
+        layers: dict[str,list[list[float]]] = load.read_file(path)
+        for k, v in layers.items():
+            l = load.single_line(name=k, cords=v)
         
-        # plot line on canvas, finishing building line_object by appending line2d_object
-        # if this is unclear, refer to load.py for more information
-        temp, = self.matplot_subplot.plot(*[x_cords, y_cords], **l.parameters)
-        l.line2d_object.append(temp)
-        
-        # add line_object to container, key is full path
-        self.container[l.nick] = l
+            x_cords: list[float] = l.abs_cords_x
+            y_cords: list[float] = l.abs_cords_y
+            # y_trend: numpy.poly1d = l.trendline_y
+            # x_trend: numpy.ndarray = l.trendline_x
+            
+            # plot line on canvas, finishing building line_object by appending line2d_object
+            # if this is unclear, refer to load.py for more information
+            # trend_l, = self.matplot_subplot.plot(*[x_trend, y_trend(x_trend)], **l.t_parameters)
+            main_l, = self.matplot_subplot.plot(*[x_cords, y_cords], **l.parameters)
+            l.line2d_object.append(main_l)
+            # l.line2d_object.append(trend_l)
+            
+            # add line_object to container, key is full path
+            self.container[l.nick] = l
         
         # refresh canvas and stop timer
         self._refresh_canvas()
+        self.gui.pref.refresh()
         end_time = time()
         print("[GRTK] graph loaded: ", round((end_time-start_time)*1000, 2), "ms")
     
@@ -100,7 +111,7 @@ class line_container(object):
         end_time = time()
         print("[GRTK] pref changed: ", round((end_time-start_time)*1000, 2), "ms")
     
-    def _refresh_canvas(self) -> None:
+    def _refresh_canvas(self, refresh_legend=True) -> None:
         """refresh canvas after make any changes
         helper function
         """
@@ -113,7 +124,15 @@ class line_container(object):
         self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
         self.tk_toolbar.update()
         self.frame.pack(fill=tkinter.BOTH, expand=1)
-        self.matplot_subplot.legend()
+        if refresh_legend:
+            self.matplot_subplot.legend(
+                loc='upper center',
+                bbox_to_anchor=(0.5, 1.1),
+                facecolor="black",
+                ncol=3,
+                edgecolor="black",
+                labelcolor="white"
+            )
     
     def view_shift_left(self) -> None:
         xrange = self.matplot_subplot.get_xlim()[1] - self.matplot_subplot.get_xlim()[0]

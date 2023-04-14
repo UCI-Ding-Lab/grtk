@@ -55,13 +55,9 @@ class single_line(object):
         # cords
         self.abs_cords_x = cords[0]
         self.abs_cords_y = cords[1]
-        # self.mean = numpy.mean(self.abs_cords_y)
-        # self.trend = numpy.polyfit(self.abs_cords_x, self.abs_cords_y, 1)
-        # self.trendline_y = numpy.poly1d(self.trend)
-        # self.trendline_x = numpy.array(self.abs_cords_x)
         
 
-def read_file(dir: str) -> list[list[str]]:
+def read_file(dir: str) -> dict[str,list[list[float]]]:
     """read file from path and build a single_line object
 
     Args:
@@ -70,24 +66,36 @@ def read_file(dir: str) -> list[list[str]]:
     Returns:
         single_line: single line object reference
     """
-    
+    SEPERATOR = "\n----------\n"
     with open(dir, "r") as target:
         all_data = target.read()
-        layers_raw = all_data.split("\n----------\n")
+        while all_data[-1:] == "\n":
+            all_data = all_data[:-1]
         layers_data = dict()
-        for i in layers_raw:
-            temp = i.split("\n")
+        if SEPERATOR in all_data:
+            layers_raw = all_data.split("\n----------\n")
+            for i in layers_raw:
+                temp = i.split("\n")
+                curve_x = []
+                curve_y = []
+                layers_data[f"{pathlib.Path(dir).name} {temp[0]}"] = read_file_helper(temp, curve_x, curve_y)
+        else:
+            temp = all_data.split("\n")
             curve_x = []
             curve_y = []
-            if " " in temp[1]:
-                for o in temp[1:]:
-                    curve_x.append(float(o.split(" ")[0]))
-                    curve_y.append(float(o.split(" ")[1]))
-            else:
-                for index, val in enumerate(temp[1:]):
-                    curve_x.append(float(index))
-                    curve_y.append(float(val))
-            cords = [curve_x, curve_y]
-            layers_data[f"{pathlib.Path(dir).name} {temp[0]}"] = cords
+            layers_data[f"{pathlib.Path(dir).name} {temp[0]}"] = read_file_helper(temp, curve_x, curve_y)
         return layers_data
+
+def read_file_helper(aftersplit: list[str], curve_x: list[float], curve_y: list[float]) -> list[list[float]]:
+    if " " in aftersplit[1]:
+        for o in aftersplit[1:]:
+            curve_x.append(float(o.split(" ")[0]))
+            curve_y.append(float(o.split(" ")[1]))
+    else:
+        for index, val in enumerate(aftersplit[1:]):
+            curve_x.append(float(index))
+            curve_y.append(float(val))
+    cords = [curve_x, curve_y]
+    return cords
+    
     

@@ -20,6 +20,9 @@ def do_nothing():
 
 class GUI:
     def __init__(self, root: tkinter.Tk):
+        # WARNING: optimise involves with a simplification subsampling of data
+        self.optimize = False
+        
         self.menu_obj: dict[str, object] = {}
         self.log = logger()
         self.debug_mode = False

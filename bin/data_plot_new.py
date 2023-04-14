@@ -2,7 +2,8 @@
 import tkinter
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # type: ignore
+import matplotlib.style as mplstyle
 from time import time
 import numpy
 import pathlib
@@ -19,28 +20,34 @@ class line_container(object):
     def __init__(self, gui: "main.GUI"):
         self.gui: "main.GUI" = gui
         self.frame: tkinter.Frame = self.gui.line_frame
+        self.show_legend: bool = True
+        if self.gui.optimize:
+            mplstyle.use('fast')
         
         # containers
         self.container: dict[str,load.single_line] = dict()
+        
+        # default style
+        self.legend_style = dict(
+            loc='upper center',
+            bbox_to_anchor=(0.5, 1.1),
+            facecolor="black",
+            ncol=3,
+            edgecolor="black",
+            labelcolor="white"
+        )
+        
+        # init figure
         self._figure_initialization()
     
     def _figure_initialization(self) -> None:
         self.matplot_figure: Figure = Figure(figsize = (8, 5), dpi = 100)
-        self.matplot_figure.set_facecolor("black")
-        self.matplot_subplot: Axes = self.matplot_figure.add_subplot(111)
-        self.matplot_subplot.grid(color="grey")
-        self.matplot_subplot.set_facecolor("black")
-        self.matplot_subplot.tick_params(axis="x", colors="white")
-        self.matplot_subplot.tick_params(axis="y", colors="white")
-        self.matplot_subplot.set_xlabel("Time", color="white")
-        self.matplot_subplot.set_ylabel("Position", color="white")
-        self.matplot_subplot.spines["bottom"].set_color("white")
-        self.matplot_subplot.spines["top"].set_color("white")
-        self.matplot_subplot.spines["left"].set_color("white")
-        self.matplot_subplot.spines["right"].set_color("white")
+        self.matplot_subplot: Axes = self.matplot_figure.add_subplot(1,1,1) # type: ignore
+        self.change_color_theme(theme="dark")
+        self.matplot_subplot.grid(color="grey", visible=True)
         self.tk_canvas = FigureCanvasTkAgg(self.matplot_figure, master=self.frame)
         self.tk_toolbar = NavigationToolbar2Tk(self.tk_canvas, self.frame)
-        self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
+        self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1) # type: ignore
         self.tk_toolbar.update()
         self.frame.pack(fill=tkinter.BOTH, expand=1)
     
@@ -69,18 +76,10 @@ class line_container(object):
         layers: dict[str,list[list[float]]] = load.read_file(path)
         for k, v in layers.items():
             l = load.single_line(name=k, cords=v)
-        
             x_cords: list[float] = l.abs_cords_x
             y_cords: list[float] = l.abs_cords_y
-            # y_trend: numpy.poly1d = l.trendline_y
-            # x_trend: numpy.ndarray = l.trendline_x
-            
-            # plot line on canvas, finishing building line_object by appending line2d_object
-            # if this is unclear, refer to load.py for more information
-            # trend_l, = self.matplot_subplot.plot(*[x_trend, y_trend(x_trend)], **l.t_parameters)
             main_l, = self.matplot_subplot.plot(*[x_cords, y_cords], **l.parameters)
             l.line2d_object.append(main_l)
-            # l.line2d_object.append(trend_l)
             
             # add line_object to container, key is full path
             self.container[l.nick] = l
@@ -111,7 +110,7 @@ class line_container(object):
         end_time = time()
         print("[GRTK] pref changed: ", round((end_time-start_time)*1000, 2), "ms")
     
-    def _refresh_canvas(self, refresh_legend=True) -> None:
+    def _refresh_canvas(self) -> None:
         """refresh canvas after make any changes
         helper function
         """
@@ -121,18 +120,62 @@ class line_container(object):
         
         self.tk_canvas = FigureCanvasTkAgg(self.matplot_figure, master=self.frame)
         self.tk_toolbar = NavigationToolbar2Tk(self.tk_canvas, self.frame)
-        self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1)
+        self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1) # type: ignore
         self.tk_toolbar.update()
         self.frame.pack(fill=tkinter.BOTH, expand=1)
-        if refresh_legend:
-            self.matplot_subplot.legend(
-                loc='upper center',
-                bbox_to_anchor=(0.5, 1.1),
-                facecolor="black",
-                ncol=3,
-                edgecolor="black",
-                labelcolor="white"
-            )
+        
+        if len(list(self.container.keys())) > 0:
+            if self.show_legend:
+                self.matplot_subplot.legend(**self.legend_style)
+            else:
+                self.matplot_subplot.legend().remove()
+    
+    def change_color_theme(self, theme: str) -> None:
+        if theme == "light":
+            FACE_COLOR = "white"
+            EDGE_COLOR = "white"
+            TICK_COLOR = "black"
+            LABEL_COLOR = "black"
+            SPINE_COLOR = "black"
+        else:
+            FACE_COLOR = "black"
+            EDGE_COLOR = "black"
+            TICK_COLOR = "white"
+            LABEL_COLOR = "white"
+            SPINE_COLOR = "white"
+        self.matplot_figure.set_facecolor(EDGE_COLOR)
+        self.matplot_subplot.set_facecolor(FACE_COLOR)
+        self.matplot_subplot.tick_params(axis="x", colors=TICK_COLOR)
+        self.matplot_subplot.tick_params(axis="y", colors=TICK_COLOR)
+        self.matplot_subplot.set_xlabel("Time", color=LABEL_COLOR)
+        self.matplot_subplot.set_ylabel("Position", color=LABEL_COLOR)
+        self.matplot_subplot.spines["bottom"].set_color(SPINE_COLOR)
+        self.matplot_subplot.spines["top"].set_color(SPINE_COLOR)
+        self.matplot_subplot.spines["left"].set_color(SPINE_COLOR)
+        self.matplot_subplot.spines["right"].set_color(SPINE_COLOR)
+    
+    def change_grid(self, show: bool) -> None:
+        if show:
+            self.matplot_subplot.grid(color="grey", visible=True)
+        else:
+            self.matplot_subplot.grid(False)
+    
+    def change_label(self, show: bool, x: str="Time", y: str="Position") -> None:
+        if show:
+            self.matplot_subplot.set_xlabel(x)
+            self.matplot_subplot.set_ylabel(y)
+        else:
+            self.matplot_subplot.set_xlabel("")
+            self.matplot_subplot.set_ylabel("")
+    
+    def change_axis(self, show: bool) -> None:
+        if show:
+            self.matplot_subplot.axis("on")
+        else:
+            self.matplot_subplot.axis("off")
+    
+    def change_legend(self, show: bool) -> None:
+        self.show_legend = True if show else False
     
     def view_shift_left(self) -> None:
         xrange = self.matplot_subplot.get_xlim()[1] - self.matplot_subplot.get_xlim()[0]

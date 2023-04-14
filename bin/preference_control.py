@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import main
     from helper import load
-    from matplotlib import lines
     from matplotlib import axes
 
 class perf_ctl(object):
@@ -21,35 +20,16 @@ class perf_ctl(object):
         Args:
             GUI (main.GUI): GUI object
         """
+        # private initialization
+        self.init_private()
+        
         # from GUI object
         self.GUI: "main.GUI" = GUI
         self.container: dict[str,load.single_line] = GUI.container.container
-        self.axes: axes = self.GUI.container.matplot_subplot
-        
-        # private variables
-        self.pack_stat: bool = False
-        
-        # changes variables
-        self.show_var = tkinter.IntVar()
-        self.color_var = tkinter.StringVar()
-        self.width_var = tkinter.DoubleVar()
-        self.marker_size_var = tkinter.DoubleVar()
-        self.show_grid_var = tkinter.IntVar()
-        self.show_axis_var = tkinter.IntVar()
-        self.show_label_var = tkinter.IntVar()
-        self.show_legend_var = tkinter.IntVar()
-        self.dark_mode_var = tkinter.IntVar()
+        self.axes: axes.Axes = self.GUI.container.matplot_subplot
         
         # structure initialization
         self.structure = self.GUI.curve_pref_frame
-        
-        # glb status init
-        # check gird visibility
-        self.show_grid_var.set(1)
-        self.show_axis_var.set(1)
-        self.show_label_var.set(1)
-        self.show_legend_var.set(1)
-        self.dark_mode_var.set(1)
         
         # get a list of all the file paths
         possible_files = list(self.container.keys())
@@ -63,15 +43,36 @@ class perf_ctl(object):
         self.build_pref_widgets()
         
         # build global preference widgets
-        self.build_glb_options()
+        self.build_and_pack_global_widgets()
     
-    def build_glb_options(self):
+    def init_private(self):
+        self.pack_stat: bool = False
+        
+        self.show_var = tkinter.IntVar()
+        self.color_var = tkinter.StringVar()
+        self.width_var = tkinter.DoubleVar()
+        self.marker_size_var = tkinter.DoubleVar()
+        self.show_grid_var = tkinter.IntVar()
+        self.show_axis_var = tkinter.IntVar()
+        self.show_label_var = tkinter.IntVar()
+        self.show_legend_var = tkinter.IntVar()
+        self.dark_mode_var = tkinter.IntVar()
+        
+        self.show_grid_var.set(1)
+        self.show_axis_var.set(1)
+        self.show_label_var.set(1)
+        self.show_legend_var.set(1)
+        self.dark_mode_var.set(1)
+
+    ### GLOBAL PREFERENCE WIDGETS ###
+    
+    def build_and_pack_global_widgets(self):
         self.glb_pref = tkinter.LabelFrame(self.GUI.global_pref_frame, text="Global preference", padx=5)
-        self.show_grid = tkinter.Checkbutton(self.glb_pref, text="Show grid", variable=self.show_grid_var, command=self.change_show_grid)
-        self.show_axis = tkinter.Checkbutton(self.glb_pref, text="Show axis", variable=self.show_axis_var, command=self.change_show_axis)
-        self.show_label = tkinter.Checkbutton(self.glb_pref, text="Show label", variable=self.show_label_var, command=self.change_show_label)
-        self.show_legend = tkinter.Checkbutton(self.glb_pref, text="Show legend", variable=self.show_legend_var, command=self.change_show_legend)
-        self.dark_mode = tkinter.Checkbutton(self.glb_pref, text="Dark mode", variable=self.dark_mode_var, command=self.change_dark_mode)
+        self.show_grid = tkinter.Checkbutton(self.glb_pref, text="Show grid", variable=self.show_grid_var, command=self.global_change_show_grid)
+        self.show_axis = tkinter.Checkbutton(self.glb_pref, text="Show axis", variable=self.show_axis_var, command=self.global_change_show_axis)
+        self.show_label = tkinter.Checkbutton(self.glb_pref, text="Show label", variable=self.show_label_var, command=self.global_change_show_label)
+        self.show_legend = tkinter.Checkbutton(self.glb_pref, text="Show legend", variable=self.show_legend_var, command=self.global_change_show_legend)
+        self.dark_mode = tkinter.Checkbutton(self.glb_pref, text="Dark mode", variable=self.dark_mode_var, command=self.global_change_dark_mode)
         
         self.glb_pref.pack(fill=tkinter.BOTH, expand=True, padx=10)
         self.show_grid.grid(row=0, column=0, sticky=tkinter.W)
@@ -80,71 +81,32 @@ class perf_ctl(object):
         self.show_legend.grid(row=1 ,column=0, sticky=tkinter.W)
         self.dark_mode.grid(row=1, column=1, sticky=tkinter.W)
     
-    def change_show_grid(self):
-        if self.show_grid_var.get() == 1:
-            self.GUI.container.matplot_subplot.grid(color="grey", visible=True)
-        else:
-            self.GUI.container.matplot_subplot.grid(False)
-        self.glb_make_changes()
+    def global_change_show_grid(self):
+        visibility = True if self.show_grid_var.get() == 1 else False
+        self.GUI.container.change_grid(visibility)
+        self.GUI.container._refresh_canvas()
     
-    def change_show_axis(self):
-        if self.show_axis_var.get() == 1:
-            self.GUI.container.matplot_subplot.axis("on")
-        else:
-            self.GUI.container.matplot_subplot.axis("off")
-        self.glb_make_changes()
+    def global_change_show_axis(self):
+        visibility = True if self.show_axis_var.get() == 1 else False
+        self.GUI.container.change_axis(visibility)
+        self.GUI.container._refresh_canvas()
     
-    def change_show_label(self):
-        if self.show_label_var.get() == 1:
-            self.GUI.container.matplot_subplot.set_xlabel("Time")
-            self.GUI.container.matplot_subplot.set_ylabel("Position")
-        else:
-            self.GUI.container.matplot_subplot.set_xlabel("")
-            self.GUI.container.matplot_subplot.set_ylabel("")
-        self.glb_make_changes()
+    def global_change_show_label(self):
+        visibility = True if self.show_label_var.get() == 1 else False
+        self.GUI.container.change_label(visibility)
+        self.GUI.container._refresh_canvas()
     
-    def change_show_legend(self):
-        if self.show_legend_var.get() == 1:
-            self.glb_make_changes()
-        else:
-            if not self.GUI.container.matplot_subplot.get_legend():
-                pass
-            else:
-                self.GUI.container.matplot_subplot.get_legend().remove()
-            self.glb_make_changes(no_leg=True)
+    def global_change_show_legend(self):
+        visibility = True if self.show_legend_var.get() == 1 else False
+        self.GUI.container.change_legend(visibility)
+        self.GUI.container._refresh_canvas()
     
-    def change_dark_mode(self):
-        if self.dark_mode_var.get() == 1:
-            self.GUI.container.matplot_figure.set_facecolor("black")
-            self.GUI.container.matplot_subplot.set_facecolor("black")
-            self.GUI.container.matplot_subplot.tick_params(axis="x", colors="white")
-            self.GUI.container.matplot_subplot.tick_params(axis="y", colors="white")
-            self.GUI.container.matplot_subplot.set_xlabel("Time", color="white")
-            self.GUI.container.matplot_subplot.set_ylabel("Position", color="white")
-            self.GUI.container.matplot_subplot.spines["bottom"].set_color("white")
-            self.GUI.container.matplot_subplot.spines["top"].set_color("white")
-            self.GUI.container.matplot_subplot.spines["left"].set_color("white")
-            self.GUI.container.matplot_subplot.spines["right"].set_color("white")
-        else:
-            self.GUI.container.matplot_figure.set_facecolor("white")
-            self.GUI.container.matplot_subplot.set_facecolor("white")
-            self.GUI.container.matplot_subplot.tick_params(axis="x", colors="black")
-            self.GUI.container.matplot_subplot.tick_params(axis="y", colors="black")
-            self.GUI.container.matplot_subplot.set_xlabel("Time", color="black")
-            self.GUI.container.matplot_subplot.set_ylabel("Position", color="black")
-            self.GUI.container.matplot_subplot.spines["bottom"].set_color("black")
-            self.GUI.container.matplot_subplot.spines["top"].set_color("black")
-            self.GUI.container.matplot_subplot.spines["left"].set_color("black")
-            self.GUI.container.matplot_subplot.spines["right"].set_color("black")
-        self.glb_make_changes()
+    def global_change_dark_mode(self):
+        theme = "dark" if self.dark_mode_var.get() == 1 else "light"
+        self.GUI.container.change_color_theme(theme)
+        self.GUI.container._refresh_canvas()
     
-    def glb_make_changes(self, no_leg=False):
-        if no_leg:
-            self.GUI.container._refresh_canvas(refresh_legend=False)
-        elif len(list(self.GUI.container.container.keys())) == 0:
-            self.GUI.container._refresh_canvas(refresh_legend=False)
-        else:
-            self.GUI.container._refresh_canvas()
+    ### CURVE PREFERENCE WIDGETS ###
     
     def build_pref_widgets(self):
         self.pref_frame = tkinter.LabelFrame(self.structure, text="Set preference for selected file", padx=7)
@@ -154,7 +116,7 @@ class perf_ctl(object):
         self.pref_color = tkinter.Button(self.pref_frame, text="Change Color", command=self.change_color)
         self.sep2 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
         self.pref_width_preview = tkinter.Canvas(self.pref_frame, width=50, height=10)
-        self.pref_width = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=0.1 ,command=self.change_width ,textvariable=self.width_var)
+        self.pref_width = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=1 ,command=self.change_width ,textvariable=self.width_var)
         self.sep3 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
         self.pref_marker_txt = tkinter.Label(self.pref_frame, text="Marker")
         self.pref_marker = ttk.Combobox(self.pref_frame, values=list(markerlib.MARKERS.keys()), state="readonly")
@@ -185,8 +147,7 @@ class perf_ctl(object):
         self.pref_marker_size.grid(row=8, column=1)
         self.sep5.grid(row=9, column=0, columnspan=2, sticky="ew", pady=5)
         self.pref_marker_color_preview.grid(row=10, column=0, sticky="ew")
-        self.pref_marker_color.grid(row=10, column=1, sticky="ew")
-        
+        self.pref_marker_color.grid(row=10, column=1, sticky="ew")  
     
     def unpack_all(self):
         """unpack all widgets
@@ -233,7 +194,7 @@ class perf_ctl(object):
         self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
         self.pref_marker.set(markerlib.MARKERS_R[self.target_line2d.get_marker()])
         self.marker_size_var.set(self.target_line2d.get_markersize())
-        self.pref_marker_color_preview.configure(bg=self.target_line2d.get_markerfacecolor(), fg=self.target_line2d.get_markerfacecolor())
+        self.pref_marker_color_preview.configure(bg=self.target_line2d.get_markerfacecolor(), fg=self.target_line2d.get_markerfacecolor()) # type: ignore
         
         # build new options
         self.pack_all()
@@ -252,7 +213,7 @@ class perf_ctl(object):
         ask for color and update preview
         """
         self.color_var = colorchooser.askcolor()[1]
-        self.pref_color_preview.configure(bg=self.color_var, fg=self.color_var)
+        self.pref_color_preview.configure(bg=self.color_var, fg=self.color_var) # type: ignore
         self.GUI.container.change_line_preference(
             self.target_path, 
             {"color": self.color_var}
@@ -288,7 +249,7 @@ class perf_ctl(object):
         """record change in marker color variable
         """
         self.marker_color_var = colorchooser.askcolor()[1]
-        self.pref_marker_color_preview.configure(bg=self.marker_color_var, fg=self.marker_color_var)
+        self.pref_marker_color_preview.configure(bg=self.marker_color_var, fg=self.marker_color_var) # type: ignore
         self.GUI.container.change_line_preference(
             self.target_path, 
             {"markerfacecolor": self.marker_color_var}

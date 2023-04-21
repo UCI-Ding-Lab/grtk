@@ -27,7 +27,19 @@ def create_connection(db_file):
     return conn
 
 
-def create_table(conn: sqlite3.Connection, create_table_sql):
+# def create_table(conn: sqlite3.Connection, create_table_sql):
+#     """ create a table from the create_table_sql statement
+#     :param conn: Connection object
+#     :param create_table_sql: a CREATE TABLE statement
+#     :return:
+#     """
+#     try:
+#         c = conn.cursor()
+#         c.execute(create_table_sql)
+#     except Error as e:
+#         print(e)
+
+def execute_command(conn: sqlite3.Connection, create_table_sql):
     """ create a table from the create_table_sql statement
     :param conn: Connection object
     :param create_table_sql: a CREATE TABLE statement
@@ -36,12 +48,13 @@ def create_table(conn: sqlite3.Connection, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
+        conn.commit()
+        return c.fetchall()
     except Error as e:
         print(e)
 
-
-def main():
-    DB_PATH = pathlib.Path("tests/db/grtk.db")
+def initialize():
+    DB_PATH = pathlib.Path("tests/db/test.db")
     if not DB_PATH.exists():
         DB_PATH.parent.mkdir(parents=True, exist_ok=True)
         DB_PATH.touch()
@@ -64,10 +77,11 @@ def main():
     #                                 FOREIGN KEY (project_id) REFERENCES projects (id)
     #                             );"""
 
-    #CREATE TABLE IF NOT EXISTS grtk
-    sql_create_grtk_table = \
+    #CREATE TABLE IF NOT EXISTS curve
+    #curve_id int IDENTIFY(1,1) PRIMARY KEY,
+    sql_create_curve_table = \
         """
-            CREATE TABLE IF NOT EXISTS grtk 
+            CREATE TABLE IF NOT EXISTS curve 
             (
                 file_path text NOT NULL,
                 type text NOT NULL CHECK (type='system' OR type='background' OR type='real'),
@@ -78,14 +92,25 @@ def main():
                 pref_line_size float NOT NULL,
                 pref_marker_style text,
                 pref_marker_size float NOT NULL,
-                pref_marker_color text NOT NULL,
+                pref_marker_color text NOT NULL
 
-                x_coords int NOT NULL,
-                y_coords int NOT NULL
-                
             );
         """
+    
+    sql_create_coords_table = \
+        """
+            CREATE TABLE IF NOT EXISTS coords 
+            (
+                file_path text NOT NULL,
+                type text NOT NULL CHECK (type='system' OR type='background' OR type='real'),
+                curve_id int NOT NULL,
 
+                x_coord float NOT NULL,
+                y_coord float NOT NULL
+            );
+        """
+    # x_coords int NOT NULL,
+    # y_coords int NOT NULL
     # create a database connection
     conn = create_connection(DB_PATH)
 
@@ -96,10 +121,61 @@ def main():
 
         # # create tasks table
         # create_table(conn, sql_create_tasks_table)
-        create_table(conn, sql_create_grtk_table)
+        execute_command(conn, sql_create_curve_table)
+        execute_command(conn, sql_create_coords_table)
         conn.close()
     else:
         print("Error! cannot create the database connection.")
+
+#INSERT INTO curve VALUES ('some_addr','system',5,0,1,0,1,0,1);
+#INSERT INTO coords VALUES ('some_addr','system',5,1,2);
+#INSERT INTO coords VALUES ('some_addr','system',5,2,3);
+#INSERT INTO coords VALUES ('some_addr','system',5,3,4);
+
+#SELECT x_coord, y_coord FROM coords WHERE (file_path='some_addr' AND type='system' AND curve_id=5);
+
+def main():
+    # initialize()
+
+    db_path = pathlib.Path("tests/db/test.db")
+    conn = create_connection(db_path)
+
+        # """
+        #     SELECT * FROM coords;
+        # """
+
+
+    """
+        INSERT INTO coords VALUES ('some_addr','system',1,3.12,9.234234);
+    """
+
+    if conn is not None:
+        command = \
+        """
+            INSERT INTO curve VALUES ('some_addr','system',5,0,1,0,1,0,1);
+        """
+        print(execute_command(conn, command))
+        command = \
+        """
+            INSERT INTO coords VALUES ('some_addr','system',5,1,2);
+        """
+        print(execute_command(conn, command))
+        command = \
+        """
+            INSERT INTO coords VALUES ('some_addr','system',5,2,3);
+        """
+        print(execute_command(conn, command))
+        command = \
+        """
+            INSERT INTO coords VALUES ('some_addr','system',5,3,4);
+        """
+        print(execute_command(conn, command))
+
+        # conn.commit()
+        conn.close()
+    else:
+        print("Error! cannot create the database connection.")
+    
 
 
 if __name__ == '__main__':

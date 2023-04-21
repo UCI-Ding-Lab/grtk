@@ -113,7 +113,7 @@ class FileMenu():
         self.fm = None
         self.RFM = RecentFilesManager(self)
         self._init_file_menu()
-        
+        self._bind_shortcuts()
 
     def _init_file_menu(self):
         self.fm = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
@@ -122,12 +122,19 @@ class FileMenu():
         
         self.RFM.add_recent_menu()
 
+        self.fm.add_command(label="Save", command=self._save, accelerator="Ctrl+S")
+        self.fm.add_command(label="Save As...", command=self._save_as, accelerator="Ctrl+Shift+S")
+
         self.fm.add_separator()
         self.fm.add_command(label="Load Plug'in", command=do_nothing)
         self.fm.add_command(label="Unload Plug'in", command=do_nothing)
         self.fm.add_separator()
         self.fm.add_command(label="Quit All Windows", command=self.GUI.root.quit)
         self.GUI.menu_bar.add_cascade(label="File", menu=self.fm)
+
+    def _bind_shortcuts(self):
+        self.GUI.root.bind('<Control-s>', self._save)
+        self.GUI.root.bind('<Control-S>', self._save_as)
 
     def _load_gr_file(self, file_path=None):
         filetypes = (
@@ -156,3 +163,10 @@ class FileMenu():
         
         if file_path.endswith(".gr"):
             self.line_container.load_and_plot(path=file_path)
+        return
+
+    def _save(self, event=None):
+        messagebox.showerror("Notice", "The function 'Save' executed.")
+
+    def _save_as(self, event=None):
+        messagebox.showerror("Notice", "The function 'Save As' executed.")

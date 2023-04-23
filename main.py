@@ -14,6 +14,7 @@ from menus import test_menu
 from bin import data_plot_new
 from bin import keyboard_events
 from bin import preference_control
+from bin import set
 
 def do_nothing():
     pass
@@ -24,6 +25,7 @@ class GUI:
         self.optimize = False
         
         self.menu_obj: dict[str, object] = {}
+        self.setting = set.setting()
         self.log = logger()
         self.debug_mode = False
         self.root = root

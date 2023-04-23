@@ -25,7 +25,7 @@ class line_container(object):
             mplstyle.use('fast')
         
         # containers
-        self.container: dict[str,load.single_line] = dict()
+        self.container: dict[str,dict[str,dict[str,load.single_line]]] = dict(dict(dict()))
         
         # default style
         self.legend_style = dict(
@@ -65,24 +65,17 @@ class line_container(object):
         """
         # start timer
         start_time = time()
-        
-        # check if line already loaded
-        # if yes, raise error
-        for i in list(self.container.keys()):
-            if pathlib.Path(path).name in i:
-                raise ValueError("line already loaded")
+        short = pathlib.Path(path).name
         
         # if not, load line
-        layers: dict[str,list[list[float]]] = load.read_file(path)
-        for k, v in layers.items():
-            l = load.single_line(name=k, cords=v)
-            x_cords: list[float] = l.abs_cords_x
-            y_cords: list[float] = l.abs_cords_y
-            main_l, = self.matplot_subplot.plot(*[x_cords, y_cords], **l.parameters)
-            l.line2d_object.append(main_l)
-            
-            # add line_object to container, key is full path
-            self.container[l.nick] = l
+        load.read_file(path, self.container)
+        for key in list(self.container[short].keys()):
+            for l in list(self.container[short][key].values()):
+                # plot line
+                x_cords: list[float] = l.abs_cords_x
+                y_cords: list[float] = l.abs_cords_y
+                main_l, = self.matplot_subplot.plot(*[x_cords, y_cords], **l.parameters)
+                l.line2d_object.append(main_l)
         
         # refresh canvas and stop timer
         self._refresh_canvas()
@@ -91,7 +84,7 @@ class line_container(object):
         print("[GRTK] graph loaded: ", round((end_time-start_time)*1000, 2), "ms")
     
     
-    def change_line_preference(self, path: str, kwargs: dict) -> None:
+    def change_line_preference(self, path: str, type: str, curve: str, kwargs: dict) -> None:
         """update line preference from kwargs
         get line_object from container, update line2d_object[0] with kwargs
 
@@ -103,7 +96,7 @@ class line_container(object):
         start_time = time()
         
         # update line preference
-        self.container[path].line2d_object[0].update(kwargs)
+        self.container[path][type][curve].line2d_object[0].update(kwargs)
         
         # refresh canvas and stop timer
         self._refresh_canvas()

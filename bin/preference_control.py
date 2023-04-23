@@ -25,25 +25,56 @@ class perf_ctl(object):
         
         # from GUI object
         self.GUI: "main.GUI" = GUI
-        self.container: dict[str,load.single_line] = GUI.container.container
+        self.container: dict[str,dict[str,dict[str,load.single_line]]] = GUI.container.container
         self.axes: axes.Axes = self.GUI.container.matplot_subplot
         
         # structure initialization
         self.structure = self.GUI.curve_pref_frame
         
-        # get a list of all the file paths
-        possible_files = list(self.container.keys())
-        
-        # build combobox line selector
-        self.select_box = ttk.Combobox(self.structure, values=possible_files, state="readonly")
-        self.select_box.bind("<<ComboboxSelected>>", self.build_pref_options)
-        self.select_box.pack(fill=tkinter.X)
+        # TEST
+        self.tree = ttk.Treeview(self.structure)
+        self.tree.heading("#0", text="GRTK Layout Tree")
+        for i in self.container:
+            self.add_file_to_tree(i)
+            for j in self.container[i]:
+                self.add_type_to_file(i, j)
+                for k in self.container[i][j]:
+                    self.add_curve_to_type(i, j, k)
+        self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)
+        self.tree.pack(fill=tkinter.BOTH, expand=1)
         
         # build preference widgets
         self.build_pref_widgets()
         
         # build global preference widgets
         self.build_and_pack_global_widgets()
+    
+    def add_file_to_tree(self, file: str):
+        """add a file to the tree
+
+        Args:
+            file (str): file name
+        """
+        self.tree.insert("", "end", file, text=file)
+    
+    def add_type_to_file(self, file: str, type: str):
+        """add a type to a file in the tree
+
+        Args:
+            file (str): file name
+            type (str): type name
+        """
+        self.tree.insert(file, "end", file+"@"+type, text=type)
+    
+    def add_curve_to_type(self, file: str, type: str, curve: str):
+        """add a curve to a type in the tree
+
+        Args:
+            file (str): file name
+            type (str): type name
+            curve (str): curve name
+        """
+        self.tree.insert(file+"@"+type, "end", file+"@"+type+"@"+curve, text=curve)
     
     def init_private(self):
         self.pack_stat: bool = False
@@ -170,7 +201,7 @@ class perf_ctl(object):
         self.pref_marker_color_preview.grid_forget()
         self.pref_marker_color.grid_forget()
     
-    def build_pref_options(self, event):
+    def build_pref_options(self, event: tkinter.Event):
         """this is a callback function for the combobox
         after a selection is made, this function will be called
         if there is any previous options widgets packed, it will be cleared
@@ -179,33 +210,47 @@ class perf_ctl(object):
         Args:
             event (event): a must have argument for tkinter callback function
         """
-        # clear previous options
-        if self.pack_stat:
-            self.unpack_all()
-            self.update_dict = dict()
-        
         # check current status
-        self.target_path = self.select_box.get()
-        self.target_line2d = self.container[self.target_path].line2d_object[0]
-        self.show_var.set(1) if self.target_line2d.get_visible() else self.show_var.set(0)
-        self.pref_color_preview.configure(bg=self.target_line2d.get_color(), fg=self.target_line2d.get_color())
-        self.width_var.set(self.target_line2d.get_linewidth())
-        self.pref_width_preview.delete("all")
-        self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
-        self.pref_marker.set(markerlib.MARKERS_R[self.target_line2d.get_marker()])
-        self.marker_size_var.set(self.target_line2d.get_markersize())
-        self.pref_marker_color_preview.configure(bg=self.target_line2d.get_markerfacecolor(), fg=self.target_line2d.get_markerfacecolor()) # type: ignore
-        
-        # build new options
-        self.pack_all()
-        self.pack_stat = True
+        self.target_path: ttk.Treeview = event.widget
+        if len(self.target_path.focus().split("@")) != 3:
+            if self.pack_stat:
+                self.unpack_all()
+                self.update_dict = dict()
+                self.pack_stat = False
+            return
+        else:
+            # clear previous options
+            if self.pack_stat:
+                self.unpack_all()
+                self.update_dict = dict()
+            
+            self.f = self.target_path.focus().split("@")[0]
+            self.t = self.target_path.focus().split("@")[1]
+            self.c = self.target_path.focus().split("@")[2]
+            
+            self.target_line2d = self.container[self.f][self.t][self.c].line2d_object[0]
+            self.show_var.set(1) if self.target_line2d.get_visible() else self.show_var.set(0)
+            self.pref_color_preview.configure(bg=self.target_line2d.get_color(), fg=self.target_line2d.get_color())
+            self.width_var.set(self.target_line2d.get_linewidth())
+            self.pref_width_preview.delete("all")
+            self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
+            self.pref_marker.set(markerlib.MARKERS_R[self.target_line2d.get_marker()])
+            self.marker_size_var.set(self.target_line2d.get_markersize())
+            self.pref_marker_color_preview.configure(bg=self.target_line2d.get_markerfacecolor(), fg=self.target_line2d.get_markerfacecolor()) # type: ignore
+            
+            # build new options
+            self.pack_all()
+            self.pack_stat = True
     
     def change_show(self):
         """record change in show variable
         """
+        kwargs = {"visible": self.show_var.get()}
         self.GUI.container.change_line_preference(
-            self.target_path, 
-            {"visible": self.show_var.get()}
+            path=self.f,
+            type=self.t,
+            curve=self.c,
+            kwargs=kwargs,
         )
     
     def change_color(self):
@@ -214,9 +259,12 @@ class perf_ctl(object):
         """
         self.color_var = colorchooser.askcolor()[1]
         self.pref_color_preview.configure(bg=self.color_var, fg=self.color_var) # type: ignore
+        kwargs = {"color": self.color_var}
         self.GUI.container.change_line_preference(
-            self.target_path, 
-            {"color": self.color_var}
+            path=self.f,
+            type=self.t,
+            curve=self.c,
+            kwargs=kwargs,
         )
     
     def change_width(self):
@@ -224,25 +272,34 @@ class perf_ctl(object):
         """
         self.pref_width_preview.delete("all")
         self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
+        kwargs = {"linewidth": self.width_var.get()}
         self.GUI.container.change_line_preference(
-            self.target_path, 
-            {"linewidth": self.width_var.get()}
+            path=self.f,
+            type=self.t,
+            curve=self.c, 
+            kwargs=kwargs,
         )
     
     def change_marker_size(self):
         """record change in marker size variable
         """
+        kwargs = {"markersize": self.marker_size_var.get()}
         self.GUI.container.change_line_preference(
-            self.target_path, 
-            {"markersize": self.marker_size_var.get()}
+            path=self.f,
+            type=self.t,
+            curve=self.c, 
+            kwargs=kwargs,
         )
     
     def change_marker(self, event):
         """record change in marker variable
         """
+        kwargs = {"marker": markerlib.MARKERS[self.pref_marker.get()]}
         self.GUI.container.change_line_preference(
-            self.target_path, 
-            {"marker": markerlib.MARKERS[self.pref_marker.get()]}
+            path=self.f,
+            type=self.t,
+            curve=self.c, 
+            kwargs=kwargs,
         )
     
     def change_marker_color(self):
@@ -250,19 +307,25 @@ class perf_ctl(object):
         """
         self.marker_color_var = colorchooser.askcolor()[1]
         self.pref_marker_color_preview.configure(bg=self.marker_color_var, fg=self.marker_color_var) # type: ignore
+        kwargs = {
+            "markerfacecolor": self.marker_color_var,
+            "markeredgecolor": self.marker_color_var
+        }
         self.GUI.container.change_line_preference(
-            self.target_path, 
-            {"markerfacecolor": self.marker_color_var}
-        )
-        self.GUI.container.change_line_preference(
-            self.target_path, 
-            {"markeredgecolor": self.marker_color_var}
+            path=self.f,
+            type=self.t,
+            curve=self.c, 
+            kwargs=kwargs,
         )
     
     def refresh(self):
-        """refresh the combobox
+        """refresh the treeview
         """
-        self.select_box["values"] = list(self.container.keys())
-        self.select_box.current(0)
-        self.build_pref_options(None)
+        self.tree.delete(*self.tree.get_children())
+        for i in self.container:
+            self.add_file_to_tree(i)
+            for j in self.container[i]:
+                self.add_type_to_file(i, j)
+                for k in self.container[i][j]:
+                    self.add_curve_to_type(i, j, k)
         

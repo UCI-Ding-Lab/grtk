@@ -25,7 +25,7 @@ class perf_ctl(object):
         
         # from GUI object
         self.GUI: "main.GUI" = GUI
-        self.container: dict[str,dict[str,dict[str,load.single_line]]] = GUI.container.container
+        self.container = GUI.container.container
         self.axes: axes.Axes = self.GUI.container.matplot_subplot
         
         # structure initialization
@@ -178,7 +178,7 @@ class perf_ctl(object):
         self.pref_marker_size.grid(row=8, column=1)
         self.sep5.grid(row=9, column=0, columnspan=2, sticky="ew", pady=5)
         self.pref_marker_color_preview.grid(row=10, column=0, sticky="ew")
-        self.pref_marker_color.grid(row=10, column=1, sticky="ew")  
+        self.pref_marker_color.grid(row=10, column=1, sticky="ew")
     
     def unpack_all(self):
         """unpack all widgets
@@ -212,7 +212,7 @@ class perf_ctl(object):
         """
         # check current status
         self.target_path: ttk.Treeview = event.widget
-        if len(self.target_path.focus().split("@")) != 3:
+        if (len(self.target_path.selection()) != 1) or (len(self.target_path.focus().split("@")) != 3):
             if self.pack_stat:
                 self.unpack_all()
                 self.update_dict = dict()

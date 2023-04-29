@@ -8,6 +8,8 @@ from time import time
 import numpy
 import pathlib
 
+from collections import defaultdict
+
 # file
 from helper import load
 
@@ -25,8 +27,9 @@ class line_container(object):
             mplstyle.use('fast')
         
         # containers
-        self.container: dict[str,dict[str,dict[str,load.single_line]]] = dict(dict(dict()))
-        
+        # self.container: dict[str,dict[str,dict[str,load.single_line]]] = dict(dict(dict()))
+        self.container = defaultdict(lambda: defaultdict(dict))
+             
         # default style
         self.legend_style = dict(
             loc='upper center',
@@ -72,9 +75,7 @@ class line_container(object):
         for key in list(self.container[short].keys()):
             for l in list(self.container[short][key].values()):
                 # plot line
-                x_cords: list[float] = l.abs_cords_x
-                y_cords: list[float] = l.abs_cords_y
-                main_l, = self.matplot_subplot.plot(*[x_cords, y_cords], **l.parameters)
+                main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                 l.line2d_object.append(main_l)
         
         # refresh canvas and stop timer
@@ -83,6 +84,15 @@ class line_container(object):
         end_time = time()
         print("[GRTK] graph loaded: ", round((end_time-start_time)*1000, 2), "ms")
     
+    def load_and_plot_obj(self, target: load.single_line):
+        start_time = time()
+        main_l, = self.matplot_subplot.plot(*target.plt_cords, **target.parameters)
+        target.line2d_object.append(main_l)
+        self.container[target.parent][target.curve_type][target.nick] = target
+        self._refresh_canvas()
+        self.gui.pref.refresh()
+        end_time = time()
+        print("[GRTK] new object graphed: ", round((end_time-start_time)*1000, 2), "ms")
     
     def change_line_preference(self, path: str, type: str, curve: str, kwargs: dict) -> None:
         """update line preference from kwargs

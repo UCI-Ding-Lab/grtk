@@ -15,6 +15,7 @@ from bin import data_plot_new
 from bin import keyboard_events
 from bin import preference_control
 from bin import set
+from bin import operation
 
 def do_nothing():
     pass
@@ -31,6 +32,7 @@ class GUI:
         self.root = root
         self.menu_bar = tkinter.Menu(root)
         self._init_frames()
+        self.operation = operation.operations()
         self.container = data_plot_new.line_container(gui=self)
         self.pref = preference_control.perf_ctl(self)
         self._window()

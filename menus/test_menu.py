@@ -15,7 +15,36 @@ class TestMenu():
         # test_menu.add_command(label="Show Cordinate Marker", command=self._enable_cord_marker)
         test_menu.add_command(label="Shift Left", command=do_nothing)
         test_menu.add_command(label="clear recent file", command=self._clear_recent_file)
+        test_menu.add_command(label="show temp", command=self._temp)
         self.GUI.menu_bar.add_cascade(label="Test", menu=test_menu)
+
+    def _temp(self):
+        # print(self.GUI.container.container)
+        # for k, v in self.GUI.container.container.items():
+        #     print(k)
+        # print("++++++++++++++++")
+        # for k, v in self.GUI.container.container.items():
+        #     print(v)
+        # print(self.GUI.container.container['303.gr']['system']['graph 6'])
+        
+        
+        # for i, j in self.GUI.container.container.items():
+        #     for r in self.GUI.container.container[i][self.GUI.container.container[i]].items():
+        #         print(r)
+        
+        # temp = []
+        # for i in self.GUI.container.container.keys():
+        #     for j in self.GUI.container.container[i].keys():
+        #         for r in self.GUI.container.container[i][j].keys():
+        #             print(self.GUI.container.container[i][j][r].line2d_object[0].get_marker())
+        print(self.GUI.container.get_curves_list())
+        #             temp.append([i, j, r, \
+        #                 self.GUI.container.container[i][j][r].plt_cords])
+        # print(temp)
+                    # print(i, j, r)
+                    # print(self.GUI.container.container[i][j][r].plt_cords)
+                    # return None
+        return None
 
     def _clear_recent_file(self):
         file_path = r"data/recent_paths.txt"
@@ -29,3 +58,5 @@ class TestMenu():
 
 if __name__ == '__main__':
     pass
+# defaultdict(<function line_container.__init__.<locals>.<lambda> at 0x000001BB3DCA74C0>, {'303.gr': 
+#     defaultdict(<class 'dict'>, {'system': {'graph 1': <helper.load.single_line object at 0x000001BB3FAD0DC0>}, 'background': {'graph 1': <helper.load.single_line object at 0x000001BB3FAD9DF0>}, 'data': {'graph 6': <helper.load.single_line object at 0x000001BB3FAD99D0>}})})

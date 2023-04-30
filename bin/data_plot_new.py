@@ -207,3 +207,40 @@ class line_container(object):
             xmin=self.matplot_subplot.get_xlim()[0]+xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]-xrange/4)
         self.tk_canvas.draw()
+
+    def get_curves_list(self) -> list:
+        """ In each row of the returned list:
+            0 : file path
+            1 : curve type
+            2 : curve id
+            3 : visibility
+            4 : color
+            5 : linewidth
+            6 : marker
+            7 : markersize
+            8 : markerfacecolor
+            9 : markeredgecolor
+            10 : coordinates
+
+        Returns:
+            list: a list of curves in the container with all properties specified.
+        """
+        temp = []
+        for i in self.container.keys():
+            for j in self.container[i].keys():
+                for r in self.container[i][j].keys():
+                    # temp.append(self.container[i][j][r].file_path)
+                    temp.append([self.container[i][j][r].file_path, j, r, \
+                        self.container[i][j][r].line2d_object[0].get_visible(), \
+                        self.container[i][j][r].line2d_object[0].get_color(), \
+                        self.container[i][j][r].line2d_object[0].get_linewidth(), \
+                        self.container[i][j][r].line2d_object[0].get_marker(), \
+                        self.container[i][j][r].line2d_object[0].get_markersize(), \
+                        self.container[i][j][r].line2d_object[0].get_markerfacecolor(), \
+                        self.container[i][j][r].line2d_object[0].get_markeredgecolor(), \
+                        self.container[i][j][r].plt_cords])
+        return temp
+                    # print(i, j, r)
+        #             print(self.container[i][j][r].plt_cords)
+        #             return None
+        # pass

@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 import pathlib
+import os
 
 """
     Useful Commands:
@@ -12,10 +13,13 @@ import pathlib
 """
 
 def create_connection(db_file):
-    """ create a database connection to the SQLite database
-        specified by db_file
-    :param db_file: database file
-    :return: Connection object or None
+    """_summary_
+
+    Args:
+        db_file (_type_): _description_
+
+    Returns:
+        _type_: _description_
     """
     conn = None
     try:
@@ -40,10 +44,14 @@ def create_connection(db_file):
 #         print(e)
 
 def execute_command(conn: sqlite3.Connection, create_table_sql):
-    """ create a table from the create_table_sql statement
-    :param conn: Connection object
-    :param create_table_sql: a CREATE TABLE statement
-    :return:
+    """_summary_
+
+    Args:
+        conn (sqlite3.Connection): _description_
+        create_table_sql (_type_): _description_
+
+    Returns:
+        _type_: _description_
     """
     try:
         c = conn.cursor()
@@ -55,9 +63,10 @@ def execute_command(conn: sqlite3.Connection, create_table_sql):
 
 def initialize():
     DB_PATH = pathlib.Path("tests/db/test.db")
-    if not DB_PATH.exists():
-        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        DB_PATH.touch()
+    if DB_PATH.exists():
+        os.remove(DB_PATH)
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    DB_PATH.touch()
 
     # sql_create_projects_table = """ CREATE TABLE IF NOT EXISTS projects (
     #                                     id integer PRIMARY KEY,
@@ -79,6 +88,12 @@ def initialize():
 
     #CREATE TABLE IF NOT EXISTS curve
     #curve_id int IDENTIFY(1,1) PRIMARY KEY,
+    # sql_create_db = \
+    #     """
+    #         DROP DATABASE IF EXISTS {};
+    #         CREATE DATABASE cs122a_hackathon;
+    #         USE cs122a_hackathon;
+    #     """
     sql_create_curve_table = \
         """
             CREATE TABLE IF NOT EXISTS curve 
@@ -92,7 +107,8 @@ def initialize():
                 pref_line_size float NOT NULL,
                 pref_marker_style text,
                 pref_marker_size float NOT NULL,
-                pref_marker_color text NOT NULL
+                pref_marker_color text NOT NULL,
+                PRIMARY KEY (file_path, type, curve_id)
 
             );
         """
@@ -106,7 +122,9 @@ def initialize():
                 curve_id int NOT NULL,
 
                 x_coord float NOT NULL,
-                y_coord float NOT NULL
+                y_coord float NOT NULL,
+               
+                FOREIGN KEY (file_path, type, curve_id) REFERENCES curve (file_path, type, curve_id)
             );
         """
     # x_coords int NOT NULL,
@@ -135,46 +153,45 @@ def initialize():
 #SELECT x_coord, y_coord FROM coords WHERE (file_path='some_addr' AND type='system' AND curve_id=5);
 
 def main():
-    # initialize()
+    initialize()
+    # db_path = pathlib.Path("tests/db/test.db")
+    # conn = create_connection(db_path)
 
-    db_path = pathlib.Path("tests/db/test.db")
-    conn = create_connection(db_path)
-
-        # """
-        #     SELECT * FROM coords;
-        # """
+    #     # """
+    #     #     SELECT * FROM coords;
+    #     # """
 
 
-    """
-        INSERT INTO coords VALUES ('some_addr','system',1,3.12,9.234234);
-    """
+    # """
+    #     INSERT INTO coords VALUES ('some_addr','system',1,3.12,9.234234);
+    # """
 
-    if conn is not None:
-        command = \
-        """
-            INSERT INTO curve VALUES ('some_addr','system',5,0,1,0,1,0,1);
-        """
-        print(execute_command(conn, command))
-        command = \
-        """
-            INSERT INTO coords VALUES ('some_addr','system',5,1,2);
-        """
-        print(execute_command(conn, command))
-        command = \
-        """
-            INSERT INTO coords VALUES ('some_addr','system',5,2,3);
-        """
-        print(execute_command(conn, command))
-        command = \
-        """
-            INSERT INTO coords VALUES ('some_addr','system',5,3,4);
-        """
-        print(execute_command(conn, command))
+    # if conn is not None:
+    #     command = \
+    #     """
+    #         INSERT INTO curve VALUES ('some_addr','system',5,0,1,0,1,0,1);
+    #     """
+    #     print(execute_command(conn, command))
+    #     command = \
+    #     """
+    #         INSERT INTO coords VALUES ('some_addr','system',5,1,2);
+    #     """
+    #     print(execute_command(conn, command))
+    #     command = \
+    #     """
+    #         INSERT INTO coords VALUES ('some_addr','system',5,2,3);
+    #     """
+    #     print(execute_command(conn, command))
+    #     command = \
+    #     """
+    #         INSERT INTO coords VALUES ('some_addr','system',5,3,4);
+    #     """
+    #     print(execute_command(conn, command))
 
-        # conn.commit()
-        conn.close()
-    else:
-        print("Error! cannot create the database connection.")
+    #     # conn.commit()
+    #     conn.close()
+    # else:
+    #     print("Error! cannot create the database connection.")
     
 
 

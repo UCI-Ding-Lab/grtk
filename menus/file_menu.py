@@ -6,6 +6,7 @@ import timeit
 from bin.data_plot_new import line_container
 import os
 import sqlite3
+from bin.save_manager import SaveManager
 # from queue import Queue
 
 # typecheck
@@ -146,9 +147,8 @@ class FileMenu():
         if file_path == None:
             file_path = fd.askopenfilename(
                 title='Open a file',
-                initialdir='/',
                 filetypes=filetypes)
-
+            
 
         # self.RFM.add(file_path)
         if os.path.exists(file_path) == True:
@@ -169,4 +169,15 @@ class FileMenu():
         messagebox.showerror("Notice", "The function 'Save' executed.")
 
     def _save_as(self, event=None):
+        filetypes = (
+            ('databases', '*.db'),
+        )
+        file_path = fd.asksaveasfilename(
+            initialfile = "Untitled.db", \
+            defaultextension=".db", \
+            filetypes=filetypes)
+        # print(directory_path)
+        sm = SaveManager(self.GUI)
+        sm.save(self.line_container, file_path)
+        
         messagebox.showerror("Notice", "The function 'Save As' executed.")

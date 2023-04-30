@@ -5,7 +5,7 @@ from bin.set import setting
 
 
 class single_line(object):
-    def __init__(self, curve: str, type: str, file: str, cords: numpy.ndarray):
+    def __init__(self, curve: str, type: str, file: str, cords: numpy.ndarray, file_path: str):
         """single line object is the object for a single file path
         a single file path may contain up to one line
         this object has the lines cordinates in a list of anchor object
@@ -39,6 +39,8 @@ class single_line(object):
         self.abs_cords_y = numpy.array(cords[1])
         self.plt_cords = numpy.array([cords[0], cords[1]])
 
+        # Added by Guanchen @ 4/30/2023
+        self.file_path = file_path
 
 def read_file(dir: str, container) -> None:
     """read file from path and build a single_line object
@@ -69,7 +71,7 @@ def read_file(dir: str, container) -> None:
                 #     container[short][temp[0]] = {
                 #         temp[1]: read_file_helper(short, temp, curve_x, curve_y)
                 #     }
-                container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y)
+                container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y, dir)
         else:
             temp = all_data.split("\n")
             curve_x = []
@@ -82,11 +84,11 @@ def read_file(dir: str, container) -> None:
             #     container[short][temp[0]] = {
             #         temp[1]: read_file_helper(short, temp, curve_x, curve_y)
             #     }
-            container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y)
+            container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y, dir)
 
 
 def read_file_helper(
-    dir: str, aftersplit: list[str], curve_x: list[float], curve_y: list[float]
+    dir: str, aftersplit: list[str], curve_x: list[float], curve_y: list[float], file_path: str
 ) -> single_line:
     if " " in aftersplit[2]:
         for o in aftersplit[2:]:
@@ -97,5 +99,5 @@ def read_file_helper(
             curve_x.append(float(index))
             curve_y.append(float(val))
     cords = numpy.array([numpy.array(curve_x), numpy.array(curve_y)])
-    single_line_object = single_line(aftersplit[1], aftersplit[0], dir, cords)
+    single_line_object = single_line(aftersplit[1], aftersplit[0], dir, cords, file_path)
     return single_line_object

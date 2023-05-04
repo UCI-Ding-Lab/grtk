@@ -113,6 +113,7 @@ def read_db(dir: str, container) -> None:
     # short = pathlib.Path(dir).name
     dm = DBManager()
     curves = dm.fetch_curves(dir)
+    short = None
     for i in curves:
         short = pathlib.Path(i[0]).name
         coords = dm.fetch_coords(dir, i[0], i[1], i[2])
@@ -136,6 +137,7 @@ def read_db(dir: str, container) -> None:
             markeredgecolor= i[9]
         )
         container[short][i[1]][i[2]].parameters.update(pref_params)
+    return short
             
 
             

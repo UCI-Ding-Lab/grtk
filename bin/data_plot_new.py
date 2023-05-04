@@ -74,7 +74,7 @@ class line_container(object):
         if path.endswith('.gr'):
             load.read_file(path, self.container)
         elif path.endswith('.db'):
-            load.read_db(path, self.container)
+            short = load.read_db(path, self.container)
         for key in list(self.container[short].keys()):
             for l in list(self.container[short][key].values()):
                 # plot line

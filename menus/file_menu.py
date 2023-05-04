@@ -6,7 +6,7 @@ import timeit
 from bin.data_plot_new import line_container
 import os
 import sqlite3
-from bin.save_manager import SaveManager
+from bin.db_manager import DBManager
 # from queue import Queue
 
 # typecheck
@@ -120,7 +120,7 @@ class FileMenu():
         self.fm = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
         self.fm.add_command(label="Test OpenGL", command=do_nothing)
         self.fm.add_command(label="Load Gr File", command=self._load_gr_file)
-        
+        self.fm.add_command(label="Load DB File", command=self._load_gr_file)
         self.RFM.add_recent_menu()
 
         self.fm.add_command(label="Save", command=self._save, accelerator="Ctrl+S")
@@ -137,12 +137,17 @@ class FileMenu():
         self.GUI.root.bind('<Control-s>', self._save)
         self.GUI.root.bind('<Control-S>', self._save_as)
 
+    # def _load_db_file(self, file_path=None):
+    #     filetypes = (
+    #         ('databases', '*.db')
+    #     )
+
     def _load_gr_file(self, file_path=None):
         filetypes = (
+            ('All files', '*.*'),
             ('gr files', '*.gr'),
             ('text files', '*.txt'),
-            ('databases', '*.db'),
-            ('All files', '*.*')
+            ('databases', '*.db')
         )
         if file_path == None:
             file_path = fd.askopenfilename(
@@ -163,6 +168,8 @@ class FileMenu():
         
         if file_path.endswith(".gr"):
             self.line_container.load_and_plot(path=file_path)
+        elif file_path.endswith(".db"):
+            self.line_container.load_and_plot(path=file_path)
         return
 
     def _save(self, event=None):
@@ -177,7 +184,7 @@ class FileMenu():
             defaultextension=".db", \
             filetypes=filetypes)
         # print(directory_path)
-        sm = SaveManager(self.GUI)
+        sm = DBManager(self.GUI)
         sm.save(self.line_container, file_path)
         
-        messagebox.showerror("Notice", "The function 'Save As' executed.")
+        # messagebox.showerror("Notice", "The function 'Save As' executed.")

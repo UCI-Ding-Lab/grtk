@@ -71,7 +71,10 @@ class line_container(object):
         short = pathlib.Path(path).name
         
         # if not, load line
-        load.read_file(path, self.container)
+        if path.endswith('.gr'):
+            load.read_file(path, self.container)
+        elif path.endswith('.db'):
+            load.read_db(path, self.container)
         for key in list(self.container[short].keys()):
             for l in list(self.container[short][key].values()):
                 # plot line
@@ -213,7 +216,7 @@ class line_container(object):
             0 : file path
             1 : curve type
             2 : curve id
-            3 : visibility
+            3 : visibility (visible)
             4 : color
             5 : linewidth
             6 : marker
@@ -230,7 +233,7 @@ class line_container(object):
             for j in self.container[i].keys():
                 for r in self.container[i][j].keys():
                     # temp.append(self.container[i][j][r].file_path)
-                    temp.append([self.container[i][j][r].file_path, j, r, \
+                    temp.append((self.container[i][j][r].file_path, j, r, \
                         self.container[i][j][r].line2d_object[0].get_visible(), \
                         self.container[i][j][r].line2d_object[0].get_color(), \
                         self.container[i][j][r].line2d_object[0].get_linewidth(), \
@@ -238,9 +241,10 @@ class line_container(object):
                         self.container[i][j][r].line2d_object[0].get_markersize(), \
                         self.container[i][j][r].line2d_object[0].get_markerfacecolor(), \
                         self.container[i][j][r].line2d_object[0].get_markeredgecolor(), \
-                        self.container[i][j][r].plt_cords])
+                        self.container[i][j][r].plt_cords))
         return temp
                     # print(i, j, r)
         #             print(self.container[i][j][r].plt_cords)
         #             return None
         # pass
+        

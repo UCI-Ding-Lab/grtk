@@ -1,11 +1,11 @@
 from matplotlib import lines
-import numpy
+import numpy as np
 import pathlib
 from bin.set import setting
-
+from bin.db_manager import DBManager
 
 class single_line(object):
-    def __init__(self, curve: str, type: str, file: str, cords: numpy.ndarray, file_path: str):
+    def __init__(self, curve: str, type: str, file: str, cords: np.ndarray, file_path: str):
         """single line object is the object for a single file path
         a single file path may contain up to one line
         this object has the lines cordinates in a list of anchor object
@@ -35,9 +35,9 @@ class single_line(object):
         self.parameters["label"] = f"{file}@{type}@{curve}"
 
         # cords
-        self.abs_cords_x = numpy.array(cords[0])
-        self.abs_cords_y = numpy.array(cords[1])
-        self.plt_cords = numpy.array([cords[0], cords[1]])
+        self.abs_cords_x = np.array(cords[0])
+        self.abs_cords_y = np.array(cords[1])
+        self.plt_cords = np.array([cords[0], cords[1]])
 
         # Added by Guanchen @ 4/30/2023
         self.file_path = file_path
@@ -98,6 +98,46 @@ def read_file_helper(
         for index, val in enumerate(aftersplit[2:]):
             curve_x.append(float(index))
             curve_y.append(float(val))
-    cords = numpy.array([numpy.array(curve_x), numpy.array(curve_y)])
+    cords = np.array([np.array(curve_x), np.array(curve_y)])
     single_line_object = single_line(aftersplit[1], aftersplit[0], dir, cords, file_path)
     return single_line_object
+
+def read_db(dir: str, container) -> None:
+    """load db from path dir and build container
+
+    Args:
+        dir (str): directory of db.
+        container (line_container): container of single_line objects.
+    """
+    # SEPERATOR = "\n" + setting.SPERATOR + "\n"
+    # short = pathlib.Path(dir).name
+    dm = DBManager()
+    curves = dm.fetch_curves(dir)
+    for i in curves:
+        short = pathlib.Path(i[0]).name
+        coords = dm.fetch_coords(dir, i[0], i[1], i[2])
+        if short not in container:
+            container[short] = {}
+        if i[1] not in container[short]:
+            container[short][i[1]] = {}
+        if i[2] not in container[short][i[1]]:
+            container[short][i[1]][i[2]] = None
+        coords = np.array(dm.fetch_coords(dir, i[0], i[1], i[2]))
+        
+        container[short][i[1]][i[2]] = single_line(i[2], i[1], short, \
+            np.array([coords[:, 0], coords[:, 1]]), i[0])
+        pref_params = dict(\
+            visible= i[3], \
+            color= i[4], \
+            linewidth= i[5], \
+            marker= i[6], \
+            markersize= i[7], \
+            markerfacecolor= i[8], \
+            markeredgecolor= i[9]
+        )
+        container[short][i[1]][i[2]].parameters.update(pref_params)
+            
+
+            
+        
+    # coords = dm.fetch_coords(dir)

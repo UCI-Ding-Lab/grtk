@@ -24,4 +24,5 @@ class OptionsMenu():
         om.add_command(label="Setting", command=lambda: self.setting.change_setting(self.GUI))
         om.add_separator()
         om.add_command(label="+", command=lambda: self.operation.perform(self.GUI, "+"))
+        om.add_command(label="-", command=lambda: self.operation.perform(self.GUI, "-"))
         self.GUI.menu_bar.add_cascade(label="Options", menu=om)

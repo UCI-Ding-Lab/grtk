@@ -5,7 +5,7 @@ from bin.set import setting
 from bin.db_manager import DBManager
 
 class single_line(object):
-    def __init__(self, curve: str, type: str, file: str, cords: np.ndarray, file_path: str):
+    def __init__(self, curve: str, type: str, file: str, cords: np.ndarray, file_path: str=None):
         """single line object is the object for a single file path
         a single file path may contain up to one line
         this object has the lines cordinates in a list of anchor object
@@ -63,27 +63,11 @@ def read_file(dir: str, container) -> None:
                 temp = i.split("\n")
                 curve_x = []
                 curve_y = []
-                # if temp[0] in list(container[short].keys()):
-                #     container[short][temp[0]][temp[1]] = read_file_helper(
-                #         short, temp, curve_x, curve_y
-                #     )
-                # else:
-                #     container[short][temp[0]] = {
-                #         temp[1]: read_file_helper(short, temp, curve_x, curve_y)
-                #     }
                 container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y, dir)
         else:
             temp = all_data.split("\n")
             curve_x = []
             curve_y = []
-            # if temp[0] in list(container[short].keys()):
-            #     container[short][temp[0]][temp[1]] = read_file_helper(
-            #         short, temp, curve_x, curve_y
-            #     )
-            # else:
-            #     container[short][temp[0]] = {
-            #         temp[1]: read_file_helper(short, temp, curve_x, curve_y)
-            #     }
             container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y, dir)
 
 

@@ -17,7 +17,7 @@ from bin import preference_control
 from bin import set
 from bin import operation
 from bin import selector
-
+from pathlib import Path
 def do_nothing():
     pass
 
@@ -33,6 +33,14 @@ class GUI:
         
         # init menu
         self.menu_obj: dict[str, object] = {}
+        self.file_menu = None
+        self.edit_menu = None
+        self.option_menu = None
+        self.tools_menu = None
+        self.treatment_menu = None
+        self.test_menu = None
+        self.keyboard_events = None
+        
         
         # build
         self._init_frames()
@@ -46,7 +54,8 @@ class GUI:
         self.container = data_plot_new.line_container(gui=self)
         self.pref = preference_control.perf_ctl(self)
         self.lasso = selector.lasso(self)
-        
+        self.db_path = None # database path if .db file is loaded.
+        #self.save_state = False # indicates whether the current graph is saved.
         # menu bar
         self._menu_bar_main()
         root.config(menu=self.menu_bar)
@@ -55,6 +64,7 @@ class GUI:
         self.root.after(10, self.container._refresh_canvas)
         
         # save quit process
+        root.protocol("WM_DELETE_WINDOW", self._quit_process)
         root.mainloop()
         self.log._close()
     
@@ -115,9 +125,37 @@ class GUI:
     def _init_keyboard_events(self):
         self.keyboard_events =  keyboard_events.KeyboardEvents(self)
         
+    def _quit_process(self):
+        choice = None
+        question = None
+        if self.db_path == None:
+            question = "Want to save your changes?"
+            choice = tkinter.messagebox.askyesnocancel("Quit", question)
+            if choice == True:
+                self.file_menu.save_as()
+                self.root.destroy()
+            elif choice == False:
+                self.root.destroy()
+            else:
+                pass
+        else:
+            file_name = Path(self.db_path).name
+            question = f"Want to save your changes to '{file_name}'?"
+            choice = tkinter.messagebox.askyesnocancel("Quit", question)
+            if choice == True:
+                self.file_menu.save()
+                self.root.destroy()
+            elif choice == False:
+                self.root.destroy()
+            else:
+                pass
+        return None
+        
 def GUI_manager():
     root = tkinter.Tk()
     app = GUI(root)
+    return root, app
 
 if __name__ == '__main__':
-    GUI_manager()
+    root, app = GUI_manager()
+

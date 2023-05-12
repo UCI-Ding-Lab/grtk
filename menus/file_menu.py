@@ -26,19 +26,13 @@ class RecentFilesManager():
         self.menu = None
         self.file_path = r"data/recent_paths.txt"
         self.file = None
-        # self.read()
-        # self.write()
-        # self.read()
+
 
     def add(self, item):
         """
         Add item to recent list.
         """
-        # if os.path.exists(item) == False:
-        #     file_missing_error = "The following file is missing:\n" + item
-        #     messagebox.showerror("File Missing", file_missing_error)
-        #     self.delete(item)
-        #     return
+
         
         self.read()
         if item in self.q:
@@ -99,12 +93,7 @@ class RecentFilesManager():
         self.FileMenu.fm.add_cascade(label="Recent Gr File", menu=self.menu)
         return
 
-        # print(self.q)
 
-    # def write(self):
-    #     self.file = open(self.file_path, "w")
-    #     self.file.write("hello world:\n")
-    #     self.file.close()
 
 class FileMenu():
     def __init__(self, GUI: "main.GUI", container: line_container):
@@ -137,10 +126,7 @@ class FileMenu():
         self.GUI.root.bind('<Control-s>', self._save)
         self.GUI.root.bind('<Control-S>', self._save_as)
 
-    # def _load_db_file(self, file_path=None):
-    #     filetypes = (
-    #         ('databases', '*.db')
-    #     )
+
 
     def _load_db_file(self):
         self._load_file(type='db')
@@ -180,11 +166,18 @@ class FileMenu():
         if file_path.endswith(".gr"):
             self.line_container.load_and_plot(path=file_path)
         elif file_path.endswith(".db"):
+            self.GUI.db_path = file_path
             self.line_container.load_and_plot(path=file_path)
         return
 
     def _save(self, event=None):
-        messagebox.showerror("Notice", "The function 'Save' executed.")
+        if self.GUI.db_path == None:
+            self._save_as(event)
+        else:
+            sm = DBManager(self.GUI)
+            sm.save(self.line_container, self.GUI.db_path)
+        return None
+        # messagebox.showerror("Notice", "The function 'Save' executed.")
 
     def _save_as(self, event=None):
         filetypes = (
@@ -194,8 +187,19 @@ class FileMenu():
             initialfile = "Untitled.db", \
             defaultextension=".db", \
             filetypes=filetypes)
+        if file_path == '':
+            return None
         # print(directory_path)
         sm = DBManager(self.GUI)
         sm.save(self.line_container, file_path)
+        return None
         
         # messagebox.showerror("Notice", "The function 'Save As' executed.")
+        
+    def save_as(self):
+        self._save_as()
+        return None
+    
+    def save(self):
+        self._save()
+        return None

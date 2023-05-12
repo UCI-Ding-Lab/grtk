@@ -1,3 +1,5 @@
+C:/Work/Ding Lab/GitRepo/grtk/ExampleData/System.gr
+C:/Work/Ding Lab/GitRepo/grtk/ExampleData/Data 1.gr
+C:/Work/Ding Lab/GitRepo/grtk/ExampleData/Background 1.gr
 C:/Work/Ding Lab/GitRepo/grtk/data/Untitled.db
-C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/303.gr
 C:/Work/test_gr.gr

@@ -54,7 +54,7 @@ class RecentFilesManager():
         self.file.close()
         self.menu.delete(0, "end")
         for i in self.q:
-            self.menu.add_command(label=i, command=lambda: self.FileMenu._load_gr_file(i))
+            self.menu.add_command(label=i, command=lambda: self.FileMenu._load_file(i))
         return
 
     def delete(self, item):
@@ -72,7 +72,7 @@ class RecentFilesManager():
         self.file.close()
         self.menu.delete(0, "end")
         for i in self.q:
-            self.menu.add_command(label=i, command=lambda: self.FileMenu._load_gr_file(i))
+            self.menu.add_command(label=i, command=lambda: self.FileMenu._load_file(i))
         return
     
     def read(self):
@@ -95,7 +95,7 @@ class RecentFilesManager():
             self.menu = tkinter.Menu(self.FileMenu.fm, tearoff=0)
         self.read()
         for i in self.q:
-            self.menu.add_command(label=i, command=lambda: self.FileMenu._load_gr_file(i))
+            self.menu.add_command(label=i, command=lambda: self.FileMenu._load_file(i))
         self.FileMenu.fm.add_cascade(label="Recent Gr File", menu=self.menu)
         return
 
@@ -119,8 +119,8 @@ class FileMenu():
     def _init_file_menu(self):
         self.fm = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
         self.fm.add_command(label="Test OpenGL", command=do_nothing)
-        self.fm.add_command(label="Load Gr File", command=self._load_gr_file)
-        self.fm.add_command(label="Load DB File", command=self._load_gr_file)
+        self.fm.add_command(label="Load Gr File", command=self._load_file)
+        self.fm.add_command(label="Load DB File", command=self._load_db_file)
         self.RFM.add_recent_menu()
 
         self.fm.add_command(label="Save", command=self._save, accelerator="Ctrl+S")
@@ -142,13 +142,24 @@ class FileMenu():
     #         ('databases', '*.db')
     #     )
 
-    def _load_gr_file(self, file_path=None):
-        filetypes = (
-            ('All files', '*.*'),
-            ('gr files', '*.gr'),
-            ('text files', '*.txt'),
-            ('databases', '*.db')
-        )
+    def _load_db_file(self):
+        self._load_file(type='db')
+        return None
+
+    def _load_file(self, file_path=None, type='gr'):
+        filetypes = None
+        if type == 'gr':
+            filetypes = (
+                ('All files', '*.*'),
+                ('gr files', '*.gr'),
+                ('text files', '*.txt'),
+                ('databases', '*.db')
+            )
+        else:
+            filetypes = (
+                ('databases', '*.db'),
+                ('All files', '*.*')
+            )
         if file_path == None:
             file_path = fd.askopenfilename(
                 title='Open a file',

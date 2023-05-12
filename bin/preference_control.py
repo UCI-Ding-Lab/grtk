@@ -34,12 +34,21 @@ class perf_ctl(object):
         # TEST
         self.tree = ttk.Treeview(self.structure)
         self.tree.heading("#0", text="GRTK Layout Tree")
-        for i in self.container:
-            self.add_file_to_tree(i)
-            for j in self.container[i]:
-                self.add_type_to_file(i, j)
-                for k in self.container[i][j]:
-                    self.add_curve_to_type(i, j, k)
+        possible_type = []
+        
+        # Sort to tree
+        for file in list(self.container.keys()):
+            for type in list(self.container[file].keys()):
+                possible_type.append(type)
+        for type in set(possible_type):
+            self.add_type_to_tree(type)
+        for file in list(self.container.keys()):
+            for type in list(self.container[file].keys()):
+                self.add_file_to_type(file, type)
+                for curve in list(self.container[file][type].keys()):
+                    self.add_curve_to_file(file, type, curve)
+        
+        # Init action
         self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)
         self.tree.pack(fill=tkinter.BOTH, expand=1)
         
@@ -49,32 +58,33 @@ class perf_ctl(object):
         # build global preference widgets
         self.build_and_pack_global_widgets()
     
-    def add_file_to_tree(self, file: str):
-        """add a file to the tree
-
-        Args:
-            file (str): file name
-        """
-        self.tree.insert("", "end", file, text=file)
-    
-    def add_type_to_file(self, file: str, type: str):
+    def add_type_to_tree(self, type: str):
         """add a type to a file in the tree
 
         Args:
             file (str): file name
             type (str): type name
         """
-        self.tree.insert(file, "end", file+"@"+type, text=type)
+        self.tree.insert("", "end", type, text=type)
     
-    def add_curve_to_type(self, file: str, type: str, curve: str):
-        """add a curve to a type in the tree
+    def add_file_to_type(self, file: str, type: str):
+        """add a file to a type in the tree
+
+        Args:
+            file (str): file name
+            type (str): type name
+        """
+        self.tree.insert(type, "end", type+"@"+file, text=file)
+    
+    def add_curve_to_file(self, file: str, type: str, curve: str):
+        """add a curve to a file in the tree
 
         Args:
             file (str): file name
             type (str): type name
             curve (str): curve name
         """
-        self.tree.insert(file+"@"+type, "end", file+"@"+type+"@"+curve, text=curve)
+        self.tree.insert(type+"@"+file, "end", type+"@"+file+"@"+curve, text=curve)
     
     def init_private(self):
         self.pack_stat: bool = False
@@ -224,8 +234,8 @@ class perf_ctl(object):
                 self.unpack_all()
                 self.update_dict = dict()
             
-            self.f = self.target_path.focus().split("@")[0]
-            self.t = self.target_path.focus().split("@")[1]
+            self.t = self.target_path.focus().split("@")[0]
+            self.f = self.target_path.focus().split("@")[1]
             self.c = self.target_path.focus().split("@")[2]
             
             self.target_line2d = self.container[self.f][self.t][self.c].line2d_object[0]
@@ -322,10 +332,17 @@ class perf_ctl(object):
         """refresh the treeview
         """
         self.tree.delete(*self.tree.get_children())
-        for i in self.container:
-            self.add_file_to_tree(i)
-            for j in self.container[i]:
-                self.add_type_to_file(i, j)
-                for k in self.container[i][j]:
-                    self.add_curve_to_type(i, j, k)
+        
+        # Re-sort to tree 
+        possible_type = []
+        for file in list(self.container.keys()):
+            for type in list(self.container[file].keys()):
+                possible_type.append(type)
+        for type in set(possible_type):
+            self.add_type_to_tree(type)
+        for file in list(self.container.keys()):
+            for type in list(self.container[file].keys()):
+                self.add_file_to_type(file, type)
+                for curve in list(self.container[file][type].keys()):
+                    self.add_curve_to_file(file, type, curve)
         

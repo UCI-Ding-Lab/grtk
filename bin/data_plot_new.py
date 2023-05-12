@@ -27,8 +27,7 @@ class line_container(object):
             mplstyle.use('fast')
         
         # containers
-        # self.container: dict[str,dict[str,dict[str,load.single_line]]] = dict(dict(dict()))
-        self.container = defaultdict(lambda: defaultdict(dict))
+        self.container = defaultdict(lambda: defaultdict(dict[str, load.single_line]))
              
         # default style
         self.legend_style = dict(
@@ -120,15 +119,16 @@ class line_container(object):
         """refresh canvas after make any changes
         helper function
         """
-        self.frame.pack_forget()
-        self.tk_toolbar.destroy()
-        self.tk_canvas.get_tk_widget().destroy()
+        self.tk_canvas.draw_idle()
+        # self.frame.pack_forget()
+        # self.tk_toolbar.destroy()
+        # self.tk_canvas.get_tk_widget().destroy()
         
-        self.tk_canvas = FigureCanvasTkAgg(self.matplot_figure, master=self.frame)
-        self.tk_toolbar = NavigationToolbar2Tk(self.tk_canvas, self.frame)
-        self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1) # type: ignore
-        self.tk_toolbar.update()
-        self.frame.pack(fill=tkinter.BOTH, expand=1)
+        # self.tk_canvas = FigureCanvasTkAgg(self.matplot_figure, master=self.frame)
+        # self.tk_toolbar = NavigationToolbar2Tk(self.tk_canvas, self.frame)
+        # self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1) # type: ignore
+        # self.tk_toolbar.update()
+        # self.frame.pack(fill=tkinter.BOTH, expand=1)
         
         if len(list(self.container.keys())) > 0:
             if self.show_legend:

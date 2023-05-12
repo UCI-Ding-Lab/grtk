@@ -16,28 +16,45 @@ from bin import keyboard_events
 from bin import preference_control
 from bin import set
 from bin import operation
+from bin import selector
 
 def do_nothing():
     pass
 
 class GUI:
     def __init__(self, root: tkinter.Tk):
+        # ATTR
+        self.root = root
+        
+        # GLB SETTINGS
         # WARNING: optimise involves with a simplification subsampling of data
         self.optimize = False
+        self.debug_mode = False
         
+        # init menu
         self.menu_obj: dict[str, object] = {}
+        
+        # build
+        self._init_frames()
+        self._window()
+        
+        # load all modules
         self.setting = set.setting()
         self.log = logger()
-        self.debug_mode = False
-        self.root = root
         self.menu_bar = tkinter.Menu(root)
-        self._init_frames()
         self.operation = operation.operations()
         self.container = data_plot_new.line_container(gui=self)
         self.pref = preference_control.perf_ctl(self)
-        self._window()
+        self.lasso = selector.lasso(self)
+        
+        # menu bar
         self._menu_bar_main()
         root.config(menu=self.menu_bar)
+        
+        # update timer
+        self.root.after(10, self.container._refresh_canvas)
+        
+        # save quit process
         root.mainloop()
         self.log._close()
     

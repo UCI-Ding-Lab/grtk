@@ -34,10 +34,16 @@ class single_line(object):
             self.parameters = setting.TYPES["default"]
         self.parameters["label"] = f"{file}@{type}@{curve}"
 
-        # cords
+        # seperate xy
+        # shape: (n,)
         self.abs_cords_x = np.array(cords[0])
         self.abs_cords_y = np.array(cords[1])
+        
+        # together xy
+        # shape: (2, n)
         self.plt_cords = np.array([cords[0], cords[1]])
+        # shape: (n, 2)
+        self.plt_cords_T = self.plt_cords.transpose()
 
         # Added by Guanchen @ 4/30/2023
         self.file_path = file_path

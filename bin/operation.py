@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 class operations:
     FILE = "untitled"
-    TYPE = "generated"
+    TYPE = "Operations"
     CURVE = 0
     def __init__(self):
         pass
@@ -55,8 +55,8 @@ class operations:
         widget = gui.pref.tree
         A = widget.selection()[0].split("@")
         B = widget.selection()[1].split("@")
-        target_A = container[A[0]][A[1]][A[2]]
-        target_B = container[B[0]][B[1]][B[2]]
+        target_A = container[A[1]][A[0]][A[2]]
+        target_B = container[B[1]][B[0]][B[2]]
         if len(widget.selection()) == 2:
             if action == "+":
                 obj = self.addition(target_A, target_B)

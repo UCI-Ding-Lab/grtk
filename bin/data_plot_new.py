@@ -72,13 +72,30 @@ class line_container(object):
         # if not, load line
         if path.endswith('.gr'):
             load.read_file(path, self.container)
+            for key in list(self.container[short].keys()):
+                for l in list(self.container[short][key].values()):
+                    # plot line
+                    main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+                    l.line2d_object.append(main_l)
         elif path.endswith('.db'):
-            short = load.read_db(path, self.container)
-        for key in list(self.container[short].keys()):
-            for l in list(self.container[short][key].values()):
-                # plot line
+            # short = load.read_db(path, self.container)[0]
+            # for key in list(self.container[short].keys()):
+            #     for l in list(self.container[short][key].values()):
+            #         # print(l[0][0])
+            #         # plot line
+            #         main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+            #         l.line2d_object.append(main_l)
+            key_list = list(load.read_db(path, self.container))
+            for short, key, i2 in key_list:
+                l = self.container[short][key][i2]
+                print(l)
+                # for key in list(self.container[i].keys()):
+                #     for l in list(self.container[i][key].values()):
+                #         print([i, key, l], l.plt_cords[0][0:5])
+                        # plot line
                 main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                 l.line2d_object.append(main_l)
+
         
         # refresh canvas and stop timer
         self._refresh_canvas()

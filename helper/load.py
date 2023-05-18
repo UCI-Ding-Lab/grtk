@@ -3,6 +3,7 @@ import numpy as np
 import pathlib
 from bin.set import setting
 from bin.db_manager import DBManager
+import os
 
 class single_line(object):
     def __init__(self, curve: str, type: str, file: str, cords: np.ndarray, file_path: str=None):
@@ -103,9 +104,18 @@ def read_db(dir: str, container) -> None:
     # short = pathlib.Path(dir).name
     dm = DBManager()
     curves = dm.fetch_curves(dir)
+    # for i in curves:
+    #     print(i[1])
+    # return
+    key_list = []
     short = None
     for i in curves:
-        short = pathlib.Path(i[0]).name
+        # print(i[0])
+        if i[0] == 'untitled':
+            short = 'untitled' # For operations
+        else:
+            short = pathlib.Path(i[0]).name
+        # short_list.append(short)
         coords = dm.fetch_coords(dir, i[0], i[1], i[2])
         if short not in container:
             container[short] = {}
@@ -117,6 +127,7 @@ def read_db(dir: str, container) -> None:
         
         container[short][i[1]][i[2]] = single_line(i[2], i[1], short, \
             np.array([coords[:, 0], coords[:, 1]]), i[0])
+        key_list.append([short, i[1], i[2]])
         pref_params = dict(\
             visible= i[3], \
             color= i[4], \
@@ -127,7 +138,7 @@ def read_db(dir: str, container) -> None:
             markeredgecolor= i[9]
         )
         container[short][i[1]][i[2]].parameters.update(pref_params)
-    return short
+    return key_list
             
 
             

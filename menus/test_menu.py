@@ -44,13 +44,16 @@ class TestMenu():
         for i in self.GUI.container.get_curves_list():
             print(len(list(zip(i[-1][0], i[-1][1]))))
         """
-        temp = DBManager(self.GUI)
-        # temp.load(self.GUI.container, r"Data/Untitled.db")
+        # temp = DBManager(self.GUI)
+        # # temp.load(self.GUI.container, r"Data/Untitled.db")
         
-        arr = np.array(temp.fetch_coords(r"Data/Untitled.db", \
-            r'C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/303.gr', \
-            'system', 'graph 1'))
-        print(arr[:,0].shape)
+        # arr = np.array(temp.fetch_coords(r"Data/Untitled.db", \
+        #     r'C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/303.gr', \
+        #     'system', 'graph 1'))
+        # print(arr[:,0].shape)
+        
+        for i in self.GUI.container.get_curves_list():
+            print(i)
         
         #             temp.append([i, j, r, \
         #                 self.GUI.container.container[i][j][r].plt_cords])

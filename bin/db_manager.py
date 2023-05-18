@@ -29,8 +29,8 @@ class DBManager():
             """
                 CREATE TABLE IF NOT EXISTS curve 
                 (
-                    file_path text NOT NULL,
-                    type text NOT NULL CHECK (type='system' OR type='background' OR type='data'),
+                    file_path text,
+                    type text NOT NULL CHECK (type='system' OR type='background' OR type='data' OR type='Operations'),
                     curve_id text NOT NULL,
 
                     pref_show_on_graph int NOT NULL CHECK (pref_show_on_graph=1 OR pref_show_on_graph=0),
@@ -50,8 +50,8 @@ class DBManager():
             """
                 CREATE TABLE IF NOT EXISTS coords 
                 (
-                    file_path text NOT NULL,
-                    type text NOT NULL CHECK (type='system' OR type='background' OR type='data'),
+                    file_path text,
+                    type text NOT NULL CHECK (type='system' OR type='background' OR type='data' OR type='Operations'),
                     curve_id text NOT NULL,
 
                     x_coord float NOT NULL,
@@ -138,6 +138,7 @@ class DBManager():
         # print(container.get_curves_list())
         
     def _fetch_curves(self, db_path: str) -> list:
+        rows = []
         select_cmd = \
             """
                 SELECT * FROM curve;

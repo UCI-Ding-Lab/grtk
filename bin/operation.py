@@ -27,7 +27,8 @@ class operations:
             file=operations.FILE,
             curve=str(operations.CURVE),
             type=operations.TYPE,
-            cords=numpy.array([cords_x, cords_y])
+            cords=numpy.array([cords_x, cords_y]),
+            file_path=operations.FILE
         )
         operations.CURVE += 1
         return target_C
@@ -46,7 +47,8 @@ class operations:
             file=operations.FILE,
             curve=str(operations.CURVE),
             type=operations.TYPE,
-            cords=numpy.array([cords_x, cords_y])
+            cords=numpy.array([cords_x, cords_y]),
+            file_path=operations.FILE
         )
         operations.CURVE += 1
         return target_C

@@ -2,12 +2,14 @@ import tkinter
 import tkinter.messagebox
 from tkinter import ttk
 from bin.set import setting
+import custom
 
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import main
     from bin import operation
+    
 
 def do_nothing():
     pass
@@ -23,6 +25,10 @@ class OptionsMenu():
         om = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
         om.add_command(label="Setting", command=lambda: self.setting.change_setting(self.GUI))
         om.add_separator()
-        om.add_command(label="+", command=lambda: self.operation.perform(self.GUI, "+"))
-        om.add_command(label="-", command=lambda: self.operation.perform(self.GUI, "-"))
+        om.add_command(label="+", command=lambda: self.operation.menu_perform(self.GUI, "+"))
+        om.add_command(label="-", command=lambda: self.operation.menu_perform(self.GUI, "-"))
+        om.add_separator()
+        for key in custom.labCustom.__dict__:
+            if key.startswith("opt_"):
+                om.add_command(label=key[4:], command=lambda key=key: self.operation.cus_perform(self.GUI, key))
         self.GUI.menu_bar.add_cascade(label="Options", menu=om)

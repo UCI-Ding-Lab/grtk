@@ -2,6 +2,7 @@
 import tkinter
 import tkinter.ttk
 import tkinter.messagebox
+import os
 
 # files
 from helper.logger import logger
@@ -18,6 +19,7 @@ from bin import set
 from bin import operation
 from bin import selector
 from pathlib import Path
+import custom
 def do_nothing():
     pass
 
@@ -29,7 +31,10 @@ class GUI:
         # GLB SETTINGS
         # WARNING: optimise involves with a simplification subsampling of data
         self.optimize = False
-        self.debug_mode = False
+        self.debug_mode = True
+        
+        if self.debug_mode:
+            os.system('cls' if os.name=='nt' else 'clear')
         
         # init menu
         self.menu_obj: dict[str, object] = {}
@@ -54,6 +59,7 @@ class GUI:
         self.container = data_plot_new.line_container(gui=self)
         self.pref = preference_control.perf_ctl(self)
         self.lasso = selector.lasso(self)
+        self.usr_cus = custom.labCustom()
         self.db_path = None # database path if .db file is loaded.
         #self.save_state = False # indicates whether the current graph is saved.
         # menu bar

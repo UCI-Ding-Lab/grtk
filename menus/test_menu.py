@@ -2,6 +2,12 @@ import tkinter
 import tkinter.messagebox
 from bin.db_manager import DBManager
 import numpy as np
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import main
+    import custom
+    
 def do_nothing():
     pass
 
@@ -17,7 +23,12 @@ class TestMenu():
         test_menu.add_command(label="Shift Left", command=do_nothing)
         test_menu.add_command(label="clear recent file", command=self._clear_recent_file)
         test_menu.add_command(label="show temp", command=self._temp)
+        test_menu.add_command(label="list opt child", command=self._radom)
         self.GUI.menu_bar.add_cascade(label="Test", menu=test_menu)
+    
+    def _radom(self):
+        i:  custom.labCustom = self.GUI.custom
+        print(i.CURVE)
 
     def _temp(self):
         # print(self.GUI.container.container)

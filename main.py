@@ -45,7 +45,8 @@ class GUI:
         self.treatment_menu = None
         self.test_menu = None
         self.keyboard_events = None
-        
+        self.saved = True # indicates whether the current graph is saved.
+        # self.saved = True #
         
         # build
         self._init_frames()
@@ -134,6 +135,9 @@ class GUI:
     def _quit_process(self):
         choice = None
         question = None
+        if self.saved == True:
+            self.root.destroy()
+            return None
         if self.db_path == None:
             question = "Want to save your changes?"
             choice = tkinter.messagebox.askyesnocancel("Quit", question)

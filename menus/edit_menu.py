@@ -23,6 +23,11 @@ class EditMenu():
         self.main.add_cascade(label="Activate LS", command=lambda: self.GUI.lasso.start())
         self.main.add_cascade(label="Deactivate LS", command=lambda: self.GUI.lasso.stop())
         self.main.add_separator()
-        self.main.add_cascade(label="LS: Delete Selected", command=lambda: self.GUI.lasso.delete_selected())
-        self.main.add_cascade(label="LS: Copy Selected", command=lambda: self.GUI.lasso.copy_selected())
+        self.main.add_cascade(label="LS: Delete Selected", command=lambda: [self.GUI.lasso.delete_selected(), self._set_GUI_saved_false()])
+        self.main.add_cascade(label="LS: Copy Selected", command=lambda: [self.GUI.lasso.copy_selected(), self._set_GUI_saved_false()])
         self.GUI.menu_bar.add_cascade(label="Edit", menu=self.main)
+
+    def _set_GUI_saved_false(self):
+        self.GUI.root.title('Data Visualization Software (unsaved)')
+        self.GUI.saved = False
+        return None

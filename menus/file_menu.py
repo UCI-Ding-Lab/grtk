@@ -163,8 +163,10 @@ class FileMenu():
             self.RFM.delete(file_path)
             return
         
+        
         if file_path.endswith(".gr"):
             self.line_container.load_and_plot(path=file_path)
+            self._set_GUI_saved_false()
         elif file_path.endswith(".db"):
             self.GUI.db_path = file_path
             self.line_container.load_and_plot(path=file_path)
@@ -176,6 +178,7 @@ class FileMenu():
         else:
             sm = DBManager(self.GUI)
             sm.save(self.line_container, self.GUI.db_path)
+            self._set_GUI_saved_true()
         return None
         # messagebox.showerror("Notice", "The function 'Save' executed.")
 
@@ -192,6 +195,7 @@ class FileMenu():
         # print(directory_path)
         sm = DBManager(self.GUI)
         sm.save(self.line_container, file_path)
+        self._set_GUI_saved_true()
         return None
         
         # messagebox.showerror("Notice", "The function 'Save As' executed.")
@@ -202,4 +206,14 @@ class FileMenu():
     
     def save(self):
         self._save()
+        return None
+    
+    def _set_GUI_saved_false(self):
+        self.GUI.root.title('Data Visualization Software (unsaved)')
+        self.GUI.saved = False
+        return None
+    
+    def _set_GUI_saved_true(self):
+        self.GUI.root.title('Data Visualization Software')
+        self.GUI.saved = True
         return None

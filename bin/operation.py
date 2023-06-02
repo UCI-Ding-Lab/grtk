@@ -3,6 +3,7 @@ from helper import load
 from tkinter import ttk
 import custom
 import inspect
+from tkinter import messagebox
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -53,6 +54,26 @@ class operations:
         )
         return target_C
     
+    def opt_averaging(self, target_A: load.single_line, target_B: load.single_line):
+        # print('targ A x:::', target_A.abs_cords_x.size)
+        # print('targ A y:::', target_A.abs_cords_y.size)
+        # print('targ B x:::', target_B.abs_cords_x.size)
+        # print('targ B y:::', target_B.abs_cords_y.size)
+        if target_A.abs_cords_x.size != target_B.abs_cords_x.size:
+            messagebox.showerror("Operation Unsuccessful", "The selected curves have different sizes:\n" + \
+                f"{target_A.nick}(x, y): ({target_A.abs_cords_x.size}, {target_A.abs_cords_y.size})\n" + \
+                f"{target_B.nick}(x, y): ({target_B.abs_cords_x.size}, {target_B.abs_cords_y.size})")
+            return None
+        coords_y = (target_A.abs_cords_y + target_B.abs_cords_y) / 2
+        target_C: load.single_line = load.single_line(
+            file=operations.FILE,
+            curve=str(operations.CURVE),
+            type=operations.TYPE,
+            cords=numpy.array([target_A.abs_cords_x, coords_y]),
+            file_path=operations.FILE
+        )
+        return target_C
+    
     def selection(self, gui: "main.GUI"):
         container = gui.container.container
         widget = gui.pref.tree
@@ -72,6 +93,8 @@ class operations:
                 obj = self.opt_addition(target_A, target_B)
             elif action == "-":
                 obj = self.opt_subtract(target_A, target_B)
+            elif action == "AVG":
+                obj = self.opt_averaging(target_A, target_B)
         gui.container.load_and_plot_obj(target=obj)
         operations.CURVE += 1
     

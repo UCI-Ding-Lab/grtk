@@ -12,6 +12,6 @@ class labCustom(operation.operations):
         return X, Y
     
     def opt_myCustomFunc2(self, A:load.single_line, B:load.single_line) -> tuple[np.ndarray,np.ndarray]:
-        X = [1]
-        Y = [1]
+        X = B.abs_cords_x
+        Y = B.abs_cords_y
         return X, Y

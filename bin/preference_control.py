@@ -30,9 +30,15 @@ class perf_ctl(object):
         
         # structure initialization
         self.structure = self.GUI.curve_pref_frame
+        self.specific = self.GUI.curve_pref_down
         
-        # TEST
-        self.tree = ttk.Treeview(self.structure)
+        # scrpll style
+        style = ttk.Style()
+        style.theme_use('classic')
+
+        # Tree
+        self.tree = ttk.Treeview(self.structure, selectmode='browse')
+        self.treebar = ttk.Scrollbar(self.structure, orient ="vertical", command = self.tree.yview)
         self.tree.heading("#0", text="GRTK Layout Tree")
         possible_type = []
         
@@ -50,10 +56,13 @@ class perf_ctl(object):
         
         # Init action
         self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)
-        self.tree.pack(fill=tkinter.BOTH, expand=1)
+        self.tree.pack(side="left", fill="both", expand=True)
+        self.treebar.pack(side="right", fill="y")
+        self.tree.configure(xscrollcommand = self.treebar.set)
         
         # build preference widgets
         self.build_pref_widgets()
+        self.build_high_level_widgets()
         
         # build global preference widgets
         self.build_and_pack_global_widgets()
@@ -88,6 +97,7 @@ class perf_ctl(object):
     
     def init_private(self):
         self.pack_stat: bool = False
+        self.pack_stat_high_level: bool = False
         
         self.show_var = tkinter.IntVar()
         self.color_var = tkinter.StringVar()
@@ -98,6 +108,7 @@ class perf_ctl(object):
         self.show_label_var = tkinter.IntVar()
         self.show_legend_var = tkinter.IntVar()
         self.dark_mode_var = tkinter.IntVar()
+        self.indicate_var = tkinter.StringVar()
         
         self.show_grid_var.set(1)
         self.show_axis_var.set(1)
@@ -150,7 +161,7 @@ class perf_ctl(object):
     ### CURVE PREFERENCE WIDGETS ###
     
     def build_pref_widgets(self):
-        self.pref_frame = tkinter.LabelFrame(self.structure, text="Set preference for selected file", padx=7)
+        self.pref_frame = tkinter.LabelFrame(self.specific, text="Set preference for selected file", padx=7)
         self.pref_show_line = tkinter.Checkbutton(self.pref_frame, text="Show on graph", variable=self.show_var, command=self.change_show)
         self.sep1 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
         self.pref_color_preview = tkinter.Label(self.pref_frame, text="__")
@@ -168,6 +179,12 @@ class perf_ctl(object):
         self.sep5 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
         self.pref_marker_color_preview = tkinter.Label(self.pref_frame, text="__")
         self.pref_marker_color = tkinter.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
+    
+    def build_high_level_widgets(self):
+        self.high_level_frame = tkinter.LabelFrame(self.specific, text="High level preference", padx=7)
+        self.indicate_entry = tkinter.Label(self.high_level_frame, textvariable=self.indicate_var)
+        self.high_level_show_line = tkinter.Button(self.high_level_frame, text="Show", command=self.change_show_all)
+        self.high_level_hide_line = tkinter.Button(self.high_level_frame, text="Hide", command=self.change_hide_all)
     
     def pack_all(self):
         """pack all widgets
@@ -190,6 +207,14 @@ class perf_ctl(object):
         self.pref_marker_color_preview.grid(row=10, column=0, sticky="ew")
         self.pref_marker_color.grid(row=10, column=1, sticky="ew")
     
+    def pack_all_high_level(self):
+        """pack all high level widgets
+        """
+        self.high_level_frame.pack(expand=True, fill=tkinter.BOTH, padx=10)
+        self.indicate_entry.grid(row=0, column=0, sticky="ew", columnspan=2, pady=5)
+        self.high_level_show_line.grid(row=1, column=0, sticky="ew")
+        self.high_level_hide_line.grid(row=1, column=1, sticky="ew")
+    
     def unpack_all(self):
         """unpack all widgets
         """
@@ -211,6 +236,14 @@ class perf_ctl(object):
         self.pref_marker_color_preview.grid_forget()
         self.pref_marker_color.grid_forget()
     
+    def unpack_all_high_level(self):
+        """unpack all high level widgets
+        """
+        self.high_level_frame.pack_forget()
+        self.indicate_entry.grid_forget()
+        self.high_level_show_line.grid_forget()
+        self.high_level_hide_line.grid_forget()
+    
     def build_pref_options(self, event: tkinter.Event):
         """this is a callback function for the combobox
         after a selection is made, this function will be called
@@ -227,12 +260,38 @@ class perf_ctl(object):
                 self.unpack_all()
                 self.update_dict = dict()
                 self.pack_stat = False
-            return
+            elif self.pack_stat_high_level:
+                self.unpack_all_high_level()
+                self.update_dict = dict()
+                self.pack_stat_high_level = False
+            
+            self.c = None
+            if len(self.target_path.focus().split("@")) == 2:
+                self.t = self.target_path.focus().split("@")[0]
+                self.f = self.target_path.focus().split("@")[1]
+                self.indicate_var.set(f"File: {self.f}\nType: {self.t}")
+            elif len(self.target_path.focus().split("@")) == 1:
+                self.t = self.target_path.focus().split("@")[0]
+                self.f = None
+                self.indicate_var.set(f"File: ALL\nType: {self.t}")
+            else:
+                self.t = None
+                self.f = None
+                self.indicate_var.set(f"NULL")
+                
+            self.pack_all_high_level()
+            self.pack_stat_high_level = True
+            
         else:
             # clear previous options
             if self.pack_stat:
                 self.unpack_all()
                 self.update_dict = dict()
+                self.pack_stat = False
+            elif self.pack_stat_high_level:
+                self.unpack_all_high_level()
+                self.update_dict = dict()
+                self.pack_stat_high_level = False
             
             self.t = self.target_path.focus().split("@")[0]
             self.f = self.target_path.focus().split("@")[1]
@@ -327,6 +386,54 @@ class perf_ctl(object):
             curve=self.c, 
             kwargs=kwargs,
         )
+    
+    def change_show_all(self):
+        """record change in show variable
+        """
+        kwargs = {"visible": 1}
+        if self.f is not None and self.t is not None:
+            for curve in list(self.GUI.container.container[self.f][self.t].keys()):
+                self.GUI.container.change_line_preference(
+                    path=self.f,
+                    type=self.t,
+                    curve=curve,
+                    kwargs=kwargs,
+                )
+        elif self.t is not None and self.f is None:
+            for files in list(self.GUI.container.container.keys()):
+                for curve in list(self.GUI.container.container[files][self.t].keys()):
+                    self.GUI.container.change_line_preference(
+                        path=files,
+                        type=self.t,
+                        curve=curve,
+                        kwargs=kwargs,
+                    )
+        else:
+            return
+    
+    def change_hide_all(self):
+        """record change in show variable
+        """
+        kwargs = {"visible": 0}
+        if self.f is not None and self.t is not None:
+            for curve in list(self.GUI.container.container[self.f][self.t].keys()):
+                self.GUI.container.change_line_preference(
+                    path=self.f,
+                    type=self.t,
+                    curve=curve,
+                    kwargs=kwargs,
+                )
+        elif self.t is not None and self.f is None:
+            for files in list(self.GUI.container.container.keys()):
+                for curve in list(self.GUI.container.container[files][self.t].keys()):
+                    self.GUI.container.change_line_preference(
+                        path=files,
+                        type=self.t,
+                        curve=curve,
+                        kwargs=kwargs,
+                    )
+        else:
+            return
     
     def refresh(self):
         """refresh the treeview

@@ -179,6 +179,7 @@ class FileMenu():
             sm = DBManager(self.GUI)
             sm.save(self.line_container, self.GUI.db_path)
             self._set_GUI_saved_true()
+        messagebox.showinfo("Notification", "Saved Successfully!")
         return None
         # messagebox.showerror("Notice", "The function 'Save' executed.")
 
@@ -196,6 +197,7 @@ class FileMenu():
         sm = DBManager(self.GUI)
         sm.save(self.line_container, file_path)
         self._set_GUI_saved_true()
+        messagebox.showinfo("Notification", "Saved Successfully!")
         return None
         
         # messagebox.showerror("Notice", "The function 'Save As' executed.")

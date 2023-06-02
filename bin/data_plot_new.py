@@ -131,6 +131,7 @@ class line_container(object):
         self._refresh_canvas()
         end_time = time()
         print("[GRTK] pref changed: ", round((end_time-start_time)*1000, 2), "ms")
+        self._set_GUI_saved_false()
     
     def _refresh_canvas(self) -> None:
         """refresh canvas after make any changes
@@ -265,3 +266,7 @@ class line_container(object):
         #             return None
         # pass
         
+    def _set_GUI_saved_false(self):
+        self.gui.root.title('Data Visualization Software (unsaved)')
+        self.gui.saved = False
+        return None

@@ -98,6 +98,7 @@ class perf_ctl(object):
     def init_private(self):
         self.pack_stat: bool = False
         self.pack_stat_high_level: bool = False
+        self.selection_mode: bool = False
         
         self.show_var = tkinter.IntVar()
         self.color_var = tkinter.StringVar()
@@ -206,6 +207,8 @@ class perf_ctl(object):
         self.sep5.grid(row=9, column=0, columnspan=2, sticky="ew", pady=5)
         self.pref_marker_color_preview.grid(row=10, column=0, sticky="ew")
         self.pref_marker_color.grid(row=10, column=1, sticky="ew")
+        # refresh frame
+        self.pref_frame.update()
     
     def pack_all_high_level(self):
         """pack all high level widgets
@@ -214,6 +217,8 @@ class perf_ctl(object):
         self.indicate_entry.grid(row=0, column=0, sticky="ew", columnspan=2, pady=5)
         self.high_level_show_line.grid(row=1, column=0, sticky="ew")
         self.high_level_hide_line.grid(row=1, column=1, sticky="ew")
+        # refresh frame
+        self.high_level_frame.update()
     
     def unpack_all(self):
         """unpack all widgets
@@ -266,22 +271,36 @@ class perf_ctl(object):
                 self.pack_stat_high_level = False
             
             self.c = None
-            if len(self.target_path.focus().split("@")) == 2:
-                self.t = self.target_path.focus().split("@")[0]
-                self.f = self.target_path.focus().split("@")[1]
-                self.indicate_var.set(f"File: {self.f}\nType: {self.t}")
-            elif len(self.target_path.focus().split("@")) == 1:
-                self.t = self.target_path.focus().split("@")[0]
-                self.f = None
-                self.indicate_var.set(f"File: ALL\nType: {self.t}")
-            else:
-                self.t = None
-                self.f = None
-                self.indicate_var.set(f"NULL")
-                
-            self.pack_all_high_level()
-            self.pack_stat_high_level = True
             
+            if self.selection_mode:
+                self.global_hide()
+                for single_select in self.target_path.selection():
+                    self.t = single_select.split("@")[0]
+                    self.f = single_select.split("@")[1]
+                    self.c = single_select.split("@")[2]
+                    self.GUI.container.container[self.f][self.t][self.c].line2d_object[0].set_visible(True)
+            
+            else:
+                
+                if len(self.target_path.focus().split("@")) == 2:
+                    self.t = self.target_path.focus().split("@")[0]
+                    self.f = self.target_path.focus().split("@")[1]
+                    self.indicate_var.set(f"File: {self.f}\nType: {self.t}")
+                elif len(self.target_path.focus().split("@")) == 1:
+                    self.t = self.target_path.focus().split("@")[0]
+                    self.f = None
+                    self.indicate_var.set(f"File: ALL\nType: {self.t}")
+                else:
+                    self.t = None
+                    self.f = None
+                    self.indicate_var.set(f"NULL")
+                    
+                self.pack_all_high_level()
+                self.pack_stat_high_level = True
+        
+        elif self.selection_mode and (len(self.target_path.selection()) != 1):
+            
+            pass
         else:
             # clear previous options
             if self.pack_stat:
@@ -296,6 +315,10 @@ class perf_ctl(object):
             self.t = self.target_path.focus().split("@")[0]
             self.f = self.target_path.focus().split("@")[1]
             self.c = self.target_path.focus().split("@")[2]
+            
+            if self.selection_mode:
+                self.global_hide()
+                self.GUI.container.container[self.f][self.t][self.c].line2d_object[0].set_visible(True)
             
             self.target_line2d = self.container[self.f][self.t][self.c].line2d_object[0]
             self.show_var.set(1) if self.target_line2d.get_visible() else self.show_var.set(0)
@@ -434,6 +457,30 @@ class perf_ctl(object):
                     )
         else:
             return
+    
+    def global_show(self):
+        kwargs = {"visible": 1}
+        for file in list(self.GUI.container.container.keys()):
+            for type in list(self.GUI.container.container[file].keys()):
+                for curve in list(self.GUI.container.container[file][type].keys()):
+                    self.GUI.container.change_line_preference(
+                        path=file,
+                        type=type,
+                        curve=curve,
+                        kwargs=kwargs,
+                    )
+    
+    def global_hide(self):
+        kwargs = {"visible": 0}
+        for file in list(self.GUI.container.container.keys()):
+            for type in list(self.GUI.container.container[file].keys()):
+                for curve in list(self.GUI.container.container[file][type].keys()):
+                    self.GUI.container.change_line_preference(
+                        path=file,
+                        type=type,
+                        curve=curve,
+                        kwargs=kwargs,
+                    )
     
     def refresh(self):
         """refresh the treeview

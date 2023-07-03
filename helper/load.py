@@ -4,8 +4,9 @@ import pathlib
 from bin.set import setting
 from bin.db_manager import DBManager
 import os
+import copy
 
-class single_line(object):
+class single_line: #(object)
     def __init__(self, curve: str, type: str, file: str, cords: np.ndarray, file_path: str=None):
         """single line object is the object for a single file path
         a single file path may contain up to one line
@@ -29,10 +30,22 @@ class single_line(object):
         self.line2d_object: list[lines.Line2D] = []
 
         # drawing preference
-        if self.curve_type in list(setting.TYPES.keys()):
-            self.parameters = setting.TYPES[self.curve_type]
+        # if self.curve_type in list(setting.TYPES.keys()):
+        #     self.parameters = setting.TYPES[self.curve_type]
+        # else:
+        #     self.parameters = setting.TYPES["default"]
+        # self.parameters["label"] = f"{file}@{type}@{curve}"
+
+        if self.curve_type == "system":
+            self.parameters = dict(linewidth=0.5,color="yellow")
+        elif self.curve_type == "background":
+            self.parameters = dict(linewidth=0.5,color="green")
+        elif self.curve_type == "data":
+            self.parameters = dict(linewidth=0.0,color="red",marker=".",markersize=2.8)
+        elif self.curve_type == "default":
+            self.parameters = dict(linewidth=0.5,color="white")
         else:
-            self.parameters = setting.TYPES["default"]
+            self.parameters = dict(linewidth=0.5,color="white")
         self.parameters["label"] = f"{file}@{type}@{curve}"
 
         # seperate xy
@@ -117,6 +130,7 @@ def read_db(dir: str, container) -> None:
             short = pathlib.Path(i[0]).name
         # short_list.append(short)
         coords = dm.fetch_coords(dir, i[0], i[1], i[2])
+        print(short, dir, i[0], i[1], i[2])
         if short not in container:
             container[short] = {}
         if i[1] not in container[short]:
@@ -124,9 +138,12 @@ def read_db(dir: str, container) -> None:
         if i[2] not in container[short][i[1]]:
             container[short][i[1]][i[2]] = None
         coords = np.array(dm.fetch_coords(dir, i[0], i[1], i[2]))
-        
+        # temp_line = single_line(i[2], i[1], short, \
+        #     np.array([coords[:, 0], coords[:, 1]]), i[0])
         container[short][i[1]][i[2]] = single_line(i[2], i[1], short, \
-            np.array([coords[:, 0], coords[:, 1]]), i[0])
+            np.array([coords[:, 0], coords[:, 1]]), i[0])#copy.copy(temp_line)
+        temp_line = None
+        # print(container[short][i[1]][i[2]].parameters["label"])
         key_list.append([short, i[1], i[2]])
         pref_params = dict(\
             visible= i[3], \
@@ -138,6 +155,16 @@ def read_db(dir: str, container) -> None:
             markeredgecolor= i[9]
         )
         container[short][i[1]][i[2]].parameters.update(pref_params)
+        # print(container[short][i[1]][i[2]].parameters["label"])
+    for st, ky, i2 in key_list:
+        # # print(short, key, i2)
+        # l = self.container[short][key][i2]
+        # # print(l.parameters["label"])
+        # main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+        # l.line2d_object.append(main_l)
+        # # l = None
+        print(container[st][ky][i2].parameters["label"])
+    print("done")
     return key_list
             
 

@@ -78,23 +78,18 @@ class line_container(object):
                     main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                     l.line2d_object.append(main_l)
         elif path.endswith('.db'):
-            # short = load.read_db(path, self.container)[0]
-            # for key in list(self.container[short].keys()):
-            #     for l in list(self.container[short][key].values()):
-            #         # print(l[0][0])
-            #         # plot line
-            #         main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
-            #         l.line2d_object.append(main_l)
+
             key_list = list(load.read_db(path, self.container))
+            # print(key_list)
             for short, key, i2 in key_list:
+                # print(short, key, i2)
                 l = self.container[short][key][i2]
-                print(l)
-                # for key in list(self.container[i].keys()):
-                #     for l in list(self.container[i][key].values()):
-                #         print([i, key, l], l.plt_cords[0][0:5])
-                        # plot line
+                # print(l.parameters["label"])
                 main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                 l.line2d_object.append(main_l)
+                # l = None
+                # print(self.container[short][key][i2].parameters["label"])
+                
 
         
         # refresh canvas and stop timer

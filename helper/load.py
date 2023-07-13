@@ -130,7 +130,7 @@ def read_db(dir: str, container) -> None:
             short = pathlib.Path(i[0]).name
         # short_list.append(short)
         coords = dm.fetch_coords(dir, i[0], i[1], i[2])
-        print(short, dir, i[0], i[1], i[2])
+        # print(short, dir, i[0], i[1], i[2])
         if short not in container:
             container[short] = {}
         if i[1] not in container[short]:
@@ -156,15 +156,15 @@ def read_db(dir: str, container) -> None:
         )
         container[short][i[1]][i[2]].parameters.update(pref_params)
         # print(container[short][i[1]][i[2]].parameters["label"])
-    for st, ky, i2 in key_list:
-        # # print(short, key, i2)
-        # l = self.container[short][key][i2]
-        # # print(l.parameters["label"])
-        # main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
-        # l.line2d_object.append(main_l)
-        # # l = None
-        print(container[st][ky][i2].parameters["label"])
-    print("done")
+    # for st, ky, i2 in key_list:
+    #     # # print(short, key, i2)
+    #     # l = self.container[short][key][i2]
+    #     # # print(l.parameters["label"])
+    #     # main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+    #     # l.line2d_object.append(main_l)
+    #     # # l = None
+    #     print(container[st][ky][i2].parameters["label"])
+    # print("done")
     return key_list
             
 

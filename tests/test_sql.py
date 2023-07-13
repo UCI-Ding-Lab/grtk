@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 import pathlib
 import os
-
+import numpy as np
 """
     Useful Commands:
         PRAGMA table_info(table_name);

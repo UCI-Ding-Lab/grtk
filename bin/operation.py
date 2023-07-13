@@ -74,29 +74,79 @@ class operations:
         )
         return target_C
     
+    def opt_subtract(self, selected_curves: list):
+        pass
+    
+    def opt_addition(self, selected_curves: list):
+        cords_y = numpy.sum([i.abs_cords_y for i in selected_curves], axis=0)
+        cords_x = selected_curves[0].abs_cords_x
+        result_curve: load.single_line = load.single_line(
+            file=operations.FILE,
+            curve=str(operations.CURVE),
+            type=operations.TYPE,
+            cords=numpy.array([cords_x, cords_y]),
+            file_path=operations.FILE
+        )
+        return result_curve
+    
+    def opt_averaging(self, selected_curves: list):
+        selected_curves_sz = len(selected_curves)
+        cords_y = numpy.mean([i.abs_cords_y for i in selected_curves], axis=0)# / selected_curves_sz
+        cords_x = selected_curves[0].abs_cords_x
+        result_curve: load.single_line = load.single_line(
+            file=operations.FILE,
+            curve=str(operations.CURVE),
+            type=operations.TYPE,
+            cords=numpy.array([cords_x, cords_y]),
+            file_path=operations.FILE
+        )
+        return result_curve
+    
+    
+    
     def selection(self, gui: "main.GUI"):
         container = gui.container.container
         widget = gui.pref.tree
-        if len(widget.selection()) == 2:
-            A = widget.selection()[0].split("@")
-            B = widget.selection()[1].split("@")
-            target_A = container[A[1]][A[0]][A[2]]
-            target_B = container[B[1]][B[0]][B[2]]
-            return target_A, target_B
-        else:
-            return None, None
+        # if len(widget.selection()) == 2:
+        #     A = widget.selection()[0].split("@")
+        #     B = widget.selection()[1].split("@")
+        #     # print(len(widget.selection()))
+        #     target_A = container[A[1]][A[0]][A[2]]
+        #     target_B = container[B[1]][B[0]][B[2]]
+        #     return target_A, target_B
+        if len(widget.selection()) >= 2:
+            selected_curves = []
+            for i in widget.selection():
+                temp = i.split("@")
+                # print('testing::')
+                # print(temp)
+                selected_curves.append(container[temp[1]][temp[0]][temp[2]])
+            return selected_curves
+
+        return None#, None
         
     def menu_perform(self, gui: "main.GUI", action: str):
-        target_A, target_B = self.selection(gui)
-        if target_A is not None and target_B is not None:
+        selected_curves = self.selection(gui)
+        
+        # if target_A is not None and target_B is not None:
+        #     if action == "+":
+        #         obj = self.opt_addition(target_A, target_B)
+        #     elif action == "-":
+        #         obj = self.opt_subtract(target_A, target_B)
+        #     elif action == "AVG":
+        #         obj = self.opt_averaging(target_A, target_B)
+        #     gui.container.load_and_plot_obj(target=obj)
+        #     operations.CURVE += 1
+        if selected_curves is not None:
             if action == "+":
-                obj = self.opt_addition(target_A, target_B)
+                obj = self.opt_addition(selected_curves)
             elif action == "-":
-                obj = self.opt_subtract(target_A, target_B)
+                obj = self.opt_subtract(selected_curves)
             elif action == "AVG":
-                obj = self.opt_averaging(target_A, target_B)
-        gui.container.load_and_plot_obj(target=obj)
-        operations.CURVE += 1
+                obj = self.opt_averaging(selected_curves)
+            gui.container.load_and_plot_obj(target=obj)
+            operations.CURVE += 1
+        return None
     
     def cus_perform(self, gui: "main.GUI", cus):
         A, B = self.selection(gui)

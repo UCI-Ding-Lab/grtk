@@ -5,8 +5,10 @@ from bin.set import setting
 from bin.db_manager import DBManager
 import os
 import copy
+import random
+import colorsys
 
-class single_line: #(object)
+class single_line(object):
     def __init__(self, curve: str, type: str, file: str, cords: np.ndarray, file_path: str=None):
         """single line object is the object for a single file path
         a single file path may contain up to one line
@@ -30,23 +32,18 @@ class single_line: #(object)
         self.line2d_object: list[lines.Line2D] = []
 
         # drawing preference
-        # if self.curve_type in list(setting.TYPES.keys()):
-        #     self.parameters = setting.TYPES[self.curve_type]
-        # else:
-        #     self.parameters = setting.TYPES["default"]
-        # self.parameters["label"] = f"{file}@{type}@{curve}"
-
-        if self.curve_type == "system":
-            self.parameters = dict(linewidth=0.5,color="yellow")
-        elif self.curve_type == "background":
-            self.parameters = dict(linewidth=0.5,color="green")
-        elif self.curve_type == "data":
-            self.parameters = dict(linewidth=0.0,color="red",marker=".",markersize=2.8)
-        elif self.curve_type == "default":
-            self.parameters = dict(linewidth=0.5,color="white")
+        if self.curve_type in list(setting.TYPES.keys()):
+            self.parameters = setting.TYPES[self.curve_type].copy()
         else:
             self.parameters = dict(linewidth=0.5,color="white")
         self.parameters["label"] = f"{file}@{type}@{curve}"
+        
+        if self.curve_type == "data":
+            h = random.randint(0, 360)/360
+            s = 1
+            l = 0.5
+            color_str = colorsys.hls_to_rgb(h, l, s)
+            self.parameters['color'] = color_str
 
         # seperate xy
         # shape: (n,)

@@ -1,3 +1,4 @@
+import math
 import tkinter
 from tkinter import ttk
 from tkinter import colorchooser
@@ -322,13 +323,28 @@ class perf_ctl(object):
             
             self.target_line2d = self.container[self.f][self.t][self.c].line2d_object[0]
             self.show_var.set(1) if self.target_line2d.get_visible() else self.show_var.set(0)
-            self.pref_color_preview.configure(bg=self.target_line2d.get_color(), fg=self.target_line2d.get_color())
+            print(type(self.target_line2d.get_color()))
+            if type(self.target_line2d.get_color()) is tuple:
+                r = math.ceil(self.target_line2d.get_color()[0]*255)
+                g = math.ceil(self.target_line2d.get_color()[1]*255)
+                b = math.ceil(self.target_line2d.get_color()[2]*255)
+                color = '#%02x%02x%02x' % (r, g, b) 
+                self.pref_color_preview.configure(bg=color, fg=color)
+            else:
+                self.pref_color_preview.configure(bg=self.target_line2d.get_color(), fg=self.target_line2d.get_color())
             self.width_var.set(self.target_line2d.get_linewidth())
             self.pref_width_preview.delete("all")
             self.pref_width_preview.create_line(0, 5, 50, 5, width=self.width_var.get())
             self.pref_marker.set(markerlib.MARKERS_R[self.target_line2d.get_marker()])
             self.marker_size_var.set(self.target_line2d.get_markersize())
-            self.pref_marker_color_preview.configure(bg=self.target_line2d.get_markerfacecolor(), fg=self.target_line2d.get_markerfacecolor()) # type: ignore
+            if type(self.target_line2d.get_markerfacecolor()) is tuple:
+                r = math.ceil(self.target_line2d.get_markerfacecolor()[0]*255)
+                g = math.ceil(self.target_line2d.get_markerfacecolor()[1]*255)
+                b = math.ceil(self.target_line2d.get_markerfacecolor()[2]*255)
+                color = '#%02x%02x%02x' % (r, g, b) 
+                self.pref_marker_color_preview.configure(bg=color, fg=color) # type: ignore
+            else:
+                self.pref_marker_color_preview.configure(bg=self.target_line2d.get_markerfacecolor(), fg=self.target_line2d.get_markerfacecolor()) # type: ignore
             
             # build new options
             self.pack_all()

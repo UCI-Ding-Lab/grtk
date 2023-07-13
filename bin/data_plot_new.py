@@ -1,4 +1,5 @@
 # lib
+import colorsys
 import tkinter
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
@@ -7,6 +8,7 @@ import matplotlib.style as mplstyle
 from time import time
 import numpy
 import pathlib
+import random
 
 from collections import defaultdict
 
@@ -23,6 +25,7 @@ class line_container(object):
         self.gui: "main.GUI" = gui
         self.frame: tkinter.Frame = self.gui.line_frame
         self.show_legend: bool = True
+        self.color_rand = lambda: random.randint(128,255)
         if self.gui.optimize:
             mplstyle.use('fast')
         

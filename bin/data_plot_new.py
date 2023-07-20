@@ -88,7 +88,7 @@ class line_container(object):
                 # print(short, key, i2)
                 l = self.container[short][key][i2]
                 # print(l.parameters["label"])
-                main_l, axe= self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+                main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                 l.line2d_object.append(main_l)
                 # l = None
                 # print(self.container[short][key][i2].parameters["label"])

@@ -13,6 +13,28 @@ class setting(object):
         "data": dict(linewidth=0.0,color="red",marker=".",markersize=2.8),
         "default": dict(linewidth=0.5,color="white"),
     }
+    ANNOTATION_KWARG = dict(
+        bbox=dict(
+            boxstyle="round,pad=.5",
+            fc="white",
+            alpha=1,
+            ec="k",
+        ),
+        arrowprops=dict(
+            arrowstyle="->",
+            connectionstyle="arc3",
+            shrinkB=0,
+            ec="k",
+        ),
+    )
+    HIGHLIGHT_KWARG = dict(
+        color="white",
+        markeredgecolor="white",
+        linewidth=3,
+        markeredgewidth=3,
+        facecolor="white",
+        edgecolor="white",
+    )
 
     def __init__(self):
         pass

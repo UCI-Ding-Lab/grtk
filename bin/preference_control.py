@@ -115,7 +115,7 @@ class perf_ctl(object):
         self.show_grid_var.set(1)
         self.show_axis_var.set(1)
         self.show_label_var.set(1)
-        self.show_legend_var.set(1)
+        self.show_legend_var.set(0)
         self.dark_mode_var.set(1)
 
     ### GLOBAL PREFERENCE WIDGETS ###
@@ -299,9 +299,6 @@ class perf_ctl(object):
                 self.pack_all_high_level()
                 self.pack_stat_high_level = True
         
-        elif self.selection_mode and (len(self.target_path.selection()) != 1):
-            
-            pass
         else:
             # clear previous options
             if self.pack_stat:
@@ -323,7 +320,6 @@ class perf_ctl(object):
             
             self.target_line2d = self.container[self.f][self.t][self.c].line2d_object[0]
             self.show_var.set(1) if self.target_line2d.get_visible() else self.show_var.set(0)
-            print(type(self.target_line2d.get_color()))
             if type(self.target_line2d.get_color()) is tuple:
                 r = math.ceil(self.target_line2d.get_color()[0]*255)
                 g = math.ceil(self.target_line2d.get_color()[1]*255)

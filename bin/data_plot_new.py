@@ -24,7 +24,7 @@ class line_container(object):
     def __init__(self, gui: "main.GUI"):
         self.gui: "main.GUI" = gui
         self.frame: tkinter.Frame = self.gui.line_frame
-        self.show_legend: bool = True
+        self.show_legend: bool = False
         self.color_rand = lambda: random.randint(128,255)
         if self.gui.optimize:
             mplstyle.use('fast')
@@ -88,7 +88,7 @@ class line_container(object):
                 # print(short, key, i2)
                 l = self.container[short][key][i2]
                 # print(l.parameters["label"])
-                main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+                main_l, axe= self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                 l.line2d_object.append(main_l)
                 # l = None
                 # print(self.container[short][key][i2].parameters["label"])
@@ -136,15 +136,6 @@ class line_container(object):
         helper function
         """
         self.tk_canvas.draw_idle()
-        # self.frame.pack_forget()
-        # self.tk_toolbar.destroy()
-        # self.tk_canvas.get_tk_widget().destroy()
-        
-        # self.tk_canvas = FigureCanvasTkAgg(self.matplot_figure, master=self.frame)
-        # self.tk_toolbar = NavigationToolbar2Tk(self.tk_canvas, self.frame)
-        # self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1) # type: ignore
-        # self.tk_toolbar.update()
-        # self.frame.pack(fill=tkinter.BOTH, expand=1)
         
         if len(list(self.container.keys())) > 0:
             if self.show_legend:

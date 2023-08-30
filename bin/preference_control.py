@@ -1,6 +1,6 @@
 import math
-import tkinter
-from tkinter import ttk
+import tkinter as tk
+from tkinter import ttk, simpledialog
 from tkinter import colorchooser
 
 from helper import markerlib
@@ -12,6 +12,61 @@ if TYPE_CHECKING:
     import main
     from helper import load
     from matplotlib import axes
+
+
+
+def do_nothing(event):
+    return None
+
+
+class HoverTooltip:
+    def __init__(self, widget):
+        self.widget = widget
+        self.tooltip_window = None
+        self.last_item = None
+        self.delay = 500  # delay in milliseconds
+        self.id = None
+        
+    def show_tooltip(self, item):
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+        # Extract the tag from the item
+        tag = self.widget.item(item, "tags")[0]
+        x, y, _, _ = self.widget.bbox(item)
+        x += self.widget.winfo_rootx() + 20
+        y += self.widget.winfo_rooty() + 20
+        self.tooltip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=tag, background="#ffffe0", relief=tk.SOLID, borderwidth=1)
+        label.pack()
+
+    def hide_tooltip(self, _=None):
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
+
+    def on_hover(self, event):
+        item = self.widget.identify_row(event.y)
+        if item != self.last_item:
+            self.hide_tooltip()
+            self.last_item = item
+            if item:
+                self.id = self.widget.after(self.delay, self.show_tooltip, item)
+
+    def on_leave(self, _):
+        if self.id:
+            self.widget.after_cancel(self.id)
+        self.hide_tooltip()
+
+def on_double_click(tree, event):
+    print("clicked")
+    item = tree.selection()[0]
+    current_name = tree.item(item, 'text')
+    new_name = simpledialog.askstring("Rename", "Enter new name:", initialvalue=current_name)
+    if new_name:
+        tree.item(item, text=new_name)
+
 
 class perf_ctl(object):
     def __init__(self, GUI: "main.GUI"):
@@ -56,7 +111,13 @@ class perf_ctl(object):
                     self.add_curve_to_file(file, type, curve)
         
         # Init action
-        self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)
+        self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)  
+        
+        self.tree.bind("<Control-r>", lambda event: on_double_click(self.tree, event)) #Double-1
+        tooltip = HoverTooltip(self.tree)
+        self.tree.bind("<Motion>", tooltip.on_hover)
+        self.tree.bind("<Leave>", tooltip.on_leave)
+        
         self.tree.pack(side="left", fill="both", expand=True)
         self.treebar.pack(side="right", fill="y")
         self.tree.configure(xscrollcommand = self.treebar.set)
@@ -75,7 +136,7 @@ class perf_ctl(object):
             file (str): file name
             type (str): type name
         """
-        self.tree.insert("", "end", type, text=type)
+        self.tree.insert("", "end", type, text=type, tags=(f"{type}"))
     
     def add_file_to_type(self, file: str, type: str):
         """add a file to a type in the tree
@@ -84,7 +145,7 @@ class perf_ctl(object):
             file (str): file name
             type (str): type name
         """
-        self.tree.insert(type, "end", type+"@"+file, text=file)
+        self.tree.insert(type, "end", type+"@"+file, text=file, tags=(f"{file}"))
     
     def add_curve_to_file(self, file: str, type: str, curve: str):
         """add a curve to a file in the tree
@@ -94,23 +155,23 @@ class perf_ctl(object):
             type (str): type name
             curve (str): curve name
         """
-        self.tree.insert(type+"@"+file, "end", type+"@"+file+"@"+curve, text=curve)
+        self.tree.insert(type+"@"+file, "end", type+"@"+file+"@"+curve, text=curve, tags=(f"placeholder"))
     
     def init_private(self):
         self.pack_stat: bool = False
         self.pack_stat_high_level: bool = False
         self.selection_mode: bool = False
         
-        self.show_var = tkinter.IntVar()
-        self.color_var = tkinter.StringVar()
-        self.width_var = tkinter.DoubleVar()
-        self.marker_size_var = tkinter.DoubleVar()
-        self.show_grid_var = tkinter.IntVar()
-        self.show_axis_var = tkinter.IntVar()
-        self.show_label_var = tkinter.IntVar()
-        self.show_legend_var = tkinter.IntVar()
-        self.dark_mode_var = tkinter.IntVar()
-        self.indicate_var = tkinter.StringVar()
+        self.show_var = tk.IntVar()
+        self.color_var = tk.StringVar()
+        self.width_var = tk.DoubleVar()
+        self.marker_size_var = tk.DoubleVar()
+        self.show_grid_var = tk.IntVar()
+        self.show_axis_var = tk.IntVar()
+        self.show_label_var = tk.IntVar()
+        self.show_legend_var = tk.IntVar()
+        self.dark_mode_var = tk.IntVar()
+        self.indicate_var = tk.StringVar()
         
         self.show_grid_var.set(1)
         self.show_axis_var.set(1)
@@ -121,19 +182,19 @@ class perf_ctl(object):
     ### GLOBAL PREFERENCE WIDGETS ###
     
     def build_and_pack_global_widgets(self):
-        self.glb_pref = tkinter.LabelFrame(self.GUI.global_pref_frame, text="Global preference", padx=5)
-        self.show_grid = tkinter.Checkbutton(self.glb_pref, text="Show grid", variable=self.show_grid_var, command=self.global_change_show_grid)
-        self.show_axis = tkinter.Checkbutton(self.glb_pref, text="Show axis", variable=self.show_axis_var, command=self.global_change_show_axis)
-        self.show_label = tkinter.Checkbutton(self.glb_pref, text="Show label", variable=self.show_label_var, command=self.global_change_show_label)
-        self.show_legend = tkinter.Checkbutton(self.glb_pref, text="Show legend", variable=self.show_legend_var, command=self.global_change_show_legend)
-        self.dark_mode = tkinter.Checkbutton(self.glb_pref, text="Dark mode", variable=self.dark_mode_var, command=self.global_change_dark_mode)
+        self.glb_pref = tk.LabelFrame(self.GUI.global_pref_frame, text="Global preference", padx=5)
+        self.show_grid = tk.Checkbutton(self.glb_pref, text="Show grid", variable=self.show_grid_var, command=self.global_change_show_grid)
+        self.show_axis = tk.Checkbutton(self.glb_pref, text="Show axis", variable=self.show_axis_var, command=self.global_change_show_axis)
+        self.show_label = tk.Checkbutton(self.glb_pref, text="Show label", variable=self.show_label_var, command=self.global_change_show_label)
+        self.show_legend = tk.Checkbutton(self.glb_pref, text="Show legend", variable=self.show_legend_var, command=self.global_change_show_legend)
+        self.dark_mode = tk.Checkbutton(self.glb_pref, text="Dark mode", variable=self.dark_mode_var, command=self.global_change_dark_mode)
         
-        self.glb_pref.pack(fill=tkinter.BOTH, expand=True, padx=10)
-        self.show_grid.grid(row=0, column=0, sticky=tkinter.W)
-        self.show_axis.grid(row=0, column=1, sticky=tkinter.W)
-        self.show_label.grid(row=0, column=2, sticky=tkinter.W)
-        self.show_legend.grid(row=1 ,column=0, sticky=tkinter.W)
-        self.dark_mode.grid(row=1, column=1, sticky=tkinter.W)
+        self.glb_pref.pack(fill=tk.BOTH, expand=True, padx=10)
+        self.show_grid.grid(row=0, column=0, sticky=tk.W)
+        self.show_axis.grid(row=0, column=1, sticky=tk.W)
+        self.show_label.grid(row=0, column=2, sticky=tk.W)
+        self.show_legend.grid(row=1 ,column=0, sticky=tk.W)
+        self.dark_mode.grid(row=1, column=1, sticky=tk.W)
     
     def global_change_show_grid(self):
         visibility = True if self.show_grid_var.get() == 1 else False
@@ -163,35 +224,35 @@ class perf_ctl(object):
     ### CURVE PREFERENCE WIDGETS ###
     
     def build_pref_widgets(self):
-        self.pref_frame = tkinter.LabelFrame(self.specific, text="Set preference for selected file", padx=7)
-        self.pref_show_line = tkinter.Checkbutton(self.pref_frame, text="Show on graph", variable=self.show_var, command=self.change_show)
-        self.sep1 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_color_preview = tkinter.Label(self.pref_frame, text="__")
-        self.pref_color = tkinter.Button(self.pref_frame, text="Change Color", command=self.change_color)
-        self.sep2 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_width_preview = tkinter.Canvas(self.pref_frame, width=50, height=10)
-        self.pref_width = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=1 ,command=self.change_width ,textvariable=self.width_var)
-        self.sep3 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_marker_txt = tkinter.Label(self.pref_frame, text="Marker")
+        self.pref_frame = tk.LabelFrame(self.specific, text="Set preference for selected file", padx=7)
+        self.pref_show_line = tk.Checkbutton(self.pref_frame, text="Show on graph", variable=self.show_var, command=self.change_show)
+        self.sep1 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_color_preview = tk.Label(self.pref_frame, text="__")
+        self.pref_color = tk.Button(self.pref_frame, text="Change Color", command=self.change_color)
+        self.sep2 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_width_preview = tk.Canvas(self.pref_frame, width=50, height=10)
+        self.pref_width = tk.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=1 ,command=self.change_width ,textvariable=self.width_var)
+        self.sep3 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_marker_txt = tk.Label(self.pref_frame, text="Marker")
         self.pref_marker = ttk.Combobox(self.pref_frame, values=list(markerlib.MARKERS.keys()), state="readonly")
         self.pref_marker.bind("<<ComboboxSelected>>", self.change_marker)
-        self.sep4 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_marker_size_txt = tkinter.Label(self.pref_frame, text="Marker Size")
-        self.pref_marker_size = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=0.1 ,command=self.change_marker_size ,textvariable=self.marker_size_var)
-        self.sep5 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_marker_color_preview = tkinter.Label(self.pref_frame, text="__")
-        self.pref_marker_color = tkinter.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
+        self.sep4 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_marker_size_txt = tk.Label(self.pref_frame, text="Marker Size")
+        self.pref_marker_size = tk.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=0.1 ,command=self.change_marker_size ,textvariable=self.marker_size_var)
+        self.sep5 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_marker_color_preview = tk.Label(self.pref_frame, text="__")
+        self.pref_marker_color = tk.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
     
     def build_high_level_widgets(self):
-        self.high_level_frame = tkinter.LabelFrame(self.specific, text="High level preference", padx=7)
-        self.indicate_entry = tkinter.Label(self.high_level_frame, textvariable=self.indicate_var)
-        self.high_level_show_line = tkinter.Button(self.high_level_frame, text="Show", command=self.change_show_all)
-        self.high_level_hide_line = tkinter.Button(self.high_level_frame, text="Hide", command=self.change_hide_all)
+        self.high_level_frame = tk.LabelFrame(self.specific, text="High level preference", padx=7)
+        self.indicate_entry = tk.Label(self.high_level_frame, textvariable=self.indicate_var)
+        self.high_level_show_line = tk.Button(self.high_level_frame, text="Show", command=self.change_show_all)
+        self.high_level_hide_line = tk.Button(self.high_level_frame, text="Hide", command=self.change_hide_all)
     
     def pack_all(self):
         """pack all widgets
         """
-        self.pref_frame.pack(expand=True, fill=tkinter.BOTH, padx=10)
+        self.pref_frame.pack(expand=True, fill=tk.BOTH, padx=10)
         self.pref_show_line.grid(row=0, column=0, columnspan=2)
         self.sep1.grid(row=1, column=0, columnspan=2, sticky="ew", pady=5)
         self.pref_color_preview.grid(row=2, column=0, sticky="ew")
@@ -214,7 +275,7 @@ class perf_ctl(object):
     def pack_all_high_level(self):
         """pack all high level widgets
         """
-        self.high_level_frame.pack(expand=True, fill=tkinter.BOTH, padx=10)
+        self.high_level_frame.pack(expand=True, fill=tk.BOTH, padx=10)
         self.indicate_entry.grid(row=0, column=0, sticky="ew", columnspan=2, pady=5)
         self.high_level_show_line.grid(row=1, column=0, sticky="ew")
         self.high_level_hide_line.grid(row=1, column=1, sticky="ew")
@@ -250,14 +311,14 @@ class perf_ctl(object):
         self.high_level_show_line.grid_forget()
         self.high_level_hide_line.grid_forget()
     
-    def build_pref_options(self, event: tkinter.Event):
+    def build_pref_options(self, event: tk.Event):
         """this is a callback function for the combobox
         after a selection is made, this function will be called
         if there is any previous options widgets packed, it will be cleared
         pack new options widgets according to the selection file path
 
         Args:
-            event (event): a must have argument for tkinter callback function
+            event (event): a must have argument for tk callback function
         """
         # check current status
         self.target_path: ttk.Treeview = event.widget

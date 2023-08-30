@@ -147,29 +147,30 @@ class FileMenu():
                 ('All files', '*.*')
             )
         if file_path == None:
-            file_path = fd.askopenfilename(
+            file_path = fd.askopenfilenames(
                 title='Open a file',
                 filetypes=filetypes)
             
 
         # self.RFM.add(file_path)
-        if os.path.exists(file_path) == True:
-            self.RFM.add(file_path)
-        else:
-            if file_path == '':
+        for i in file_path:
+            if os.path.exists(i) == True:
+                self.RFM.add(i)
+            else:
+                if i == '':
+                    return
+                file_missing_error = "The following file is missing:\n" + i
+                messagebox.showerror("File Missing", file_missing_error)
+                self.RFM.delete(i)
                 return
-            file_missing_error = "The following file is missing:\n" + file_path
-            messagebox.showerror("File Missing", file_missing_error)
-            self.RFM.delete(file_path)
-            return
-        
-        
-        if file_path.endswith(".gr"):
-            self.line_container.load_and_plot(path=file_path)
-            self._set_GUI_saved_false()
-        elif file_path.endswith(".db"):
-            self.GUI.db_path = file_path
-            self.line_container.load_and_plot(path=file_path)
+            
+            
+            if i.endswith(".gr"):
+                self.line_container.load_and_plot(path=i)
+                self._set_GUI_saved_false()
+            elif i.endswith(".db"):
+                self.GUI.db_path = i
+                self.line_container.load_and_plot(path=i)
         return
 
     def _save(self, event=None):

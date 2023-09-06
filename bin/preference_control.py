@@ -59,13 +59,8 @@ class HoverTooltip:
             self.widget.after_cancel(self.id)
         self.hide_tooltip()
 
-def on_double_click(tree, event):
-    print("clicked")
-    item = tree.selection()[0]
-    current_name = tree.item(item, 'text')
-    new_name = simpledialog.askstring("Rename", "Enter new name:", initialvalue=current_name)
-    if new_name:
-        tree.item(item, text=new_name)
+
+        
 
 
 class perf_ctl(object):
@@ -113,7 +108,7 @@ class perf_ctl(object):
         # Init action
         self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)  
         
-        self.tree.bind("<Control-r>", lambda event: on_double_click(self.tree, event)) #Double-1
+        self.tree.bind("<Control-r>", lambda event: self.on_renaming(event)) #Double-1
         tooltip = HoverTooltip(self.tree)
         self.tree.bind("<Motion>", tooltip.on_hover)
         self.tree.bind("<Leave>", tooltip.on_leave)
@@ -129,6 +124,8 @@ class perf_ctl(object):
         # build global preference widgets
         self.build_and_pack_global_widgets()
     
+    
+
     def add_type_to_tree(self, type: str):
         """add a type to a file in the tree
 
@@ -573,3 +570,31 @@ class perf_ctl(object):
                 for curve in list(self.container[file][type].keys()):
                     self.add_curve_to_file(file, type, curve)
         
+    def on_renaming(self, event):
+        print("test::pref_ctrl:: on_renaming!")
+        curve = self.tree.selection()[0]
+        file = self.tree.parent(curve)
+        type = self.tree.parent(file)
+        curve_name = self.tree.item(curve, 'text')
+        file_name = self.tree.item(file, 'text')
+        type_name = self.tree.item(type, 'text')
+        new_name = None
+        new_name = simpledialog.askstring("Rename", "Enter new name:", initialvalue=curve_name)
+        if new_name != None:
+            self.tree.item(curve, text=new_name)
+            self.container[file_name][type_name][new_name] = \
+                self.container[file_name][type_name][curve_name]
+            del self.container[file_name][type_name][curve_name]
+            self.container[file_name][type_name][new_name].parameters["label"] = \
+                f"{file_name}@{type_name}@{new_name}"
+            self.container[file_name][type_name][new_name].line2d_object[0].\
+                update(dict(label=f"{file_name}@{type_name}@{new_name}"))
+            self.refresh()
+            self.GUI.container._refresh_canvas()
+            self._set_GUI_saved_false()
+            # print("Not None")
+            
+    def _set_GUI_saved_false(self):
+        self.GUI.root.title('Data Visualization Software (unsaved)')
+        self.GUI.saved = False
+        return None

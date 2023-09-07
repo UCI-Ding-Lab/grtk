@@ -3,6 +3,7 @@ from sqlite3 import Error
 import pathlib
 import os
 import numpy as np
+import csv
 """
     Useful Commands:
         PRAGMA table_info(table_name);
@@ -193,7 +194,14 @@ def main():
     # else:
     #     print("Error! cannot create the database connection.")
     
+class SaveManager():
+    def __init__(self, GUI=None):
+        pass
+    
 
+def main_csv():
+    pass
 
 if __name__ == '__main__':
-    main()
+    # main()
+    main_csv()

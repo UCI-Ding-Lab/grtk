@@ -61,7 +61,7 @@ class GUI:
         self.pref = preference_control.perf_ctl(self)
         self.lasso = selector.lasso(self)
         self.usr_cus = custom.labCustom()
-        self.db_path = None # database path if .db file is loaded.
+        self.txt_path = None # text datafile path if .txt file is loaded.
         #self.save_state = False # indicates whether the current graph is saved.
         # menu bar
         self._menu_bar_main()
@@ -140,7 +140,7 @@ class GUI:
         if self.saved == True:
             self.root.destroy()
             return None
-        if self.db_path == None:
+        if self.txt_path == None:
             question = "Want to save your changes?"
             choice = tkinter.messagebox.askyesnocancel("Quit", question)
             if choice == True:
@@ -151,7 +151,7 @@ class GUI:
             else:
                 pass
         else:
-            file_name = Path(self.db_path).name
+            file_name = Path(self.txt_path).name
             question = f"Want to save your changes to '{file_name}'?"
             choice = tkinter.messagebox.askyesnocancel("Quit", question)
             if choice == True:

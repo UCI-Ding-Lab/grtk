@@ -2,7 +2,8 @@ from matplotlib import lines
 import numpy as np
 import pathlib
 from bin.set import setting
-from bin.db_manager import DBManager
+# from bin.db_manager import DBManager
+from bin.save_manager import SaveManager
 import os
 import copy
 import random
@@ -58,6 +59,10 @@ class single_line(object):
 
         # Added by Guanchen @ 4/30/2023
         self.file_path = file_path
+        
+        # A string showing on the hovertip describing the computation of the curve \
+        # if the curve is not native to the lab data.
+        self.tip = "native"
 
 def read_file(dir: str, container) -> None:
     """read file from path and build a single_line object
@@ -103,7 +108,7 @@ def read_file_helper(
     single_line_object = single_line(aftersplit[1], aftersplit[0], dir, cords, file_path)
     return single_line_object
 
-def read_db(dir: str, container) -> None:
+def read_txt(dir: str, container) -> None:
     """load db from path dir and build container
 
     Args:
@@ -112,21 +117,24 @@ def read_db(dir: str, container) -> None:
     """
     # SEPERATOR = "\n" + setting.SPERATOR + "\n"
     # short = pathlib.Path(dir).name
-    dm = DBManager()
-    curves = dm.fetch_curves(dir)
+    # dm = DBManager()
+    sm = SaveManager()
+    # curves = dm.fetch_curves(dir)
+    prefs, coords = sm.fetch_curves(dir)
     # for i in curves:
     #     print(i[1])
     # return
     key_list = []
     short = None
-    for i in curves:
+    for i, c in list(zip(prefs, coords)):
+        processed_coords = np.array(c)
         # print(i[0])
         if i[0] == 'untitled':
             short = 'untitled' # For operations
         else:
             short = pathlib.Path(i[0]).name
         # short_list.append(short)
-        coords = dm.fetch_coords(dir, i[0], i[1], i[2])
+        # coords = dm.fetch_coords(dir, i[0], i[1], i[2])
         # print(short, dir, i[0], i[1], i[2])
         if short not in container:
             container[short] = {}
@@ -134,11 +142,12 @@ def read_db(dir: str, container) -> None:
             container[short][i[1]] = {}
         if i[2] not in container[short][i[1]]:
             container[short][i[1]][i[2]] = None
-        coords = np.array(dm.fetch_coords(dir, i[0], i[1], i[2]))
+        # coords = np.array(dm.fetch_coords(dir, i[0], i[1], i[2]))
         # temp_line = single_line(i[2], i[1], short, \
         #     np.array([coords[:, 0], coords[:, 1]]), i[0])
+        # print(c[0])
         container[short][i[1]][i[2]] = single_line(i[2], i[1], short, \
-            np.array([coords[:, 0], coords[:, 1]]), i[0])#copy.copy(temp_line)
+            np.array([processed_coords[:, 0], processed_coords[:, 1]]), i[0])#copy.copy(temp_line)
         temp_line = None
         # print(container[short][i[1]][i[2]].parameters["label"])
         key_list.append([short, i[1], i[2]])

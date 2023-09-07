@@ -80,9 +80,9 @@ class line_container(object):
                     # plot line
                     main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                     l.line2d_object.append(main_l)
-        elif path.endswith('.db'):
+        elif path.endswith('.txt'):
 
-            key_list = list(load.read_db(path, self.container))
+            key_list = list(load.read_txt(path, self.container))
             # print(key_list)
             for short, key, i2 in key_list:
                 # print(short, key, i2)
@@ -248,7 +248,7 @@ class line_container(object):
                         self.container[i][j][r].line2d_object[0].get_markersize(), \
                         self.container[i][j][r].line2d_object[0].get_markerfacecolor(), \
                         self.container[i][j][r].line2d_object[0].get_markeredgecolor(), \
-                        self.container[i][j][r].plt_cords))
+                        self.container[i][j][r].plt_cords_T))
         return temp
                     # print(i, j, r)
         #             print(self.container[i][j][r].plt_cords)

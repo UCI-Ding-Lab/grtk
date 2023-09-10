@@ -25,8 +25,8 @@ class OptionsMenu():
         om = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
         om.add_command(label="Setting", command=lambda: [self.setting.change_setting(self.GUI), self._set_GUI_saved_false()])
         om.add_separator()
-        om.add_command(label="Add", command=lambda: [self.operation.menu_perform(self.GUI, "+"), self._set_GUI_saved_false()])
-        om.add_command(label="Subtract", command=lambda: [self._set_GUI_saved_false(), self.operation.menu_perform(self.GUI, "-")]) # change back after handle operation.py bugs
+        om.add_command(label="Add", command=lambda: [self.operation.menu_perform(self.GUI, "ADD"), self._set_GUI_saved_false()])
+        om.add_command(label="Subtract", command=lambda: [self._set_GUI_saved_false(), self.operation.menu_perform(self.GUI, "SUB")]) # change back after handle operation.py bugs
         om.add_command(label="AVG", command=lambda: [self.operation.menu_perform(self.GUI, "AVG"), self._set_GUI_saved_false()])
         om.add_separator()
         for key in custom.labCustom.__dict__:

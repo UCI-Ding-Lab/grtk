@@ -29,8 +29,9 @@ class SaveManager():
                 f.write(f"pref_marker_size={i[7]}\n")
                 f.write(f"pref_marker_face_color={i[8]}\n")
                 f.write(f"pref_marker_edge_color={i[9]}\n")
+                f.write(f"tip={i[10]}\n")
                 f.write("coords(x,y)=\n")
-                for j in i[10]:
+                for j in i[11]:
                     f.write(f"{j[0]},{j[1]}\n")
                 f.write("--end\n")
         return None
@@ -72,7 +73,7 @@ class SaveManager():
                 elif line == "--end\n":
                     coords.append(temp_coords.copy())
                     temp_coords = []
-                if len(temp_pref) >= 10:
+                if len(temp_pref) >= 11:
                     prefs.append(temp_pref.copy())
                     temp_pref = []
         # coords=np.array(coords, ndmin=3)

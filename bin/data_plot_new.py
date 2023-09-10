@@ -230,7 +230,8 @@ class line_container(object):
             7 : markersize
             8 : markerfacecolor
             9 : markeredgecolor
-            10 : coordinates
+            10 : hovertip
+            11 : coordinates
 
         Returns:
             list: a list of curves in the container with all properties specified.
@@ -248,6 +249,7 @@ class line_container(object):
                         self.container[i][j][r].line2d_object[0].get_markersize(), \
                         self.container[i][j][r].line2d_object[0].get_markerfacecolor(), \
                         self.container[i][j][r].line2d_object[0].get_markeredgecolor(), \
+                        self.container[i][j][r].tip, \
                         self.container[i][j][r].plt_cords_T))
         return temp
                     # print(i, j, r)

@@ -161,6 +161,7 @@ def read_txt(dir: str, container) -> None:
             markeredgecolor= i[9]
         )
         container[short][i[1]][i[2]].parameters.update(pref_params)
+        container[short][i[1]][i[2]].tip = i[10]
         # print(container[short][i[1]][i[2]].parameters["label"])
     # for st, ky, i2 in key_list:
     #     # # print(short, key, i2)

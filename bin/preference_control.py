@@ -152,7 +152,8 @@ class perf_ctl(object):
             type (str): type name
             curve (str): curve name
         """
-        self.tree.insert(type+"@"+file, "end", type+"@"+file+"@"+curve, text=curve, tags=(f"placeholder"))
+        self.tree.insert(type+"@"+file, "end", type+"@"+file+"@"+curve, text=curve, \
+            tags=(f"{curve}:{self.container[file][type][curve].tip}"))
     
     def init_private(self):
         self.pack_stat: bool = False

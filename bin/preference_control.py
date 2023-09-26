@@ -32,7 +32,11 @@ class HoverTooltip:
             self.tooltip_window.destroy()
         # Extract the tag from the item
         tag = self.widget.item(item, "tags")[0]
-        x, y, _, _ = self.widget.bbox(item)
+        x = 0
+        y = 0
+        if self.widget.bbox(item) != None:
+            x, y, _, _ = self.widget.bbox(item)
+        
         x += self.widget.winfo_rootx() + 20
         y += self.widget.winfo_rooty() + 20
         self.tooltip_window = tw = tk.Toplevel(self.widget)
@@ -590,6 +594,22 @@ class perf_ctl(object):
                 f"{file_name}@{type_name}@{new_name}"
             self.container[file_name][type_name][new_name].line2d_object[0].\
                 update(dict(label=f"{file_name}@{type_name}@{new_name}"))
+                
+            for f in self.container:
+                for t in self.container[f]:
+                    for c in self.container[f][t]:
+                        # ptr = c.tip.find(f"{file_name}/{type_name}/{curve_name}")
+                        # if ptr != -1:
+                        #     if
+                        if f"{file_name}/{type_name}/{curve_name}" in self.container[f][t][c].tip:
+                            print(self.container[f][t][c].tip)
+                            self.container[f][t][c].tip = self.container[f][t][c].tip.replace( \
+                                f"{file_name}/{type_name}/{curve_name}", \
+                                f"{file_name}/{type_name}/{new_name}")
+                            print(self.container[f][t][c].tip)
+                        
+                
+                
             self.refresh()
             self.GUI.container._refresh_canvas()
             self._set_GUI_saved_false()

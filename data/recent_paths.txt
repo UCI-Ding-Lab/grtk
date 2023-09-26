@@ -1,5 +1,0 @@
-C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/real.txt
-C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/real_data.gr
-C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/Untitled.txt
-C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/303.gr
-C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/test.db

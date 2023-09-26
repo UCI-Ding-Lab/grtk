@@ -200,7 +200,7 @@ class SaveManager():
     
 
 def main_csv():
-    pass
+    print("abcda".replace("a", "1"))
 
 if __name__ == '__main__':
     # main()

@@ -3,7 +3,6 @@ import tkinter
 import tkinter.ttk
 import tkinter.messagebox
 import os
-import sys
 
 # files
 from helper.logger import logger
@@ -19,9 +18,7 @@ from bin import preference_control
 from bin import set
 from bin import operation
 from bin import selector
-from bin import states
 from pathlib import Path
-from plugins import *
 import custom
 def do_nothing():
     pass
@@ -64,17 +61,6 @@ class GUI:
         self.pref = preference_control.perf_ctl(self)
         self.lasso = selector.lasso(self)
         self.usr_cus = custom.labCustom()
-        
-        # plugin router
-        self.on_draw = states.on_draw(self)
-        self.on_change_color = states.on_change_color(self)
-        self.all_plugins = []
-        for i in sys.modules.keys():
-            if i.startswith("plugins."):
-                for name, obj in sys.modules[i].__dict__.items():
-                    if name.startswith("p_"):
-                        self.all_plugins.append(obj(self))
-        
         self.db_path = None # database path if .db file is loaded.
         #self.save_state = False # indicates whether the current graph is saved.
         # menu bar
@@ -176,7 +162,7 @@ class GUI:
             else:
                 pass
         return None
-  
+        
 def GUI_manager():
     root = tkinter.Tk()
     app = GUI(root)

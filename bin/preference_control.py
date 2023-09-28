@@ -21,9 +21,6 @@ class perf_ctl(object):
         Args:
             GUI (main.GUI): GUI object
         """
-        # plugin
-        self.on_change_color_job=[]
-        
         # private initialization
         self.init_private()
         
@@ -373,8 +370,6 @@ class perf_ctl(object):
             curve=self.c,
             kwargs=kwargs,
         )
-        for job in self.on_change_color_job:
-            job()
     
     def change_width(self):
         """record change in width variable

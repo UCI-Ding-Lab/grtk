@@ -28,6 +28,9 @@ class line_container(object):
         self.color_rand = lambda: random.randint(128,255)
         if self.gui.optimize:
             mplstyle.use('fast')
+            
+        # plugins
+        self.on_draw_job=[]
         
         # containers
         self.container = defaultdict(lambda: defaultdict(dict[str, load.single_line]))
@@ -79,6 +82,8 @@ class line_container(object):
                 for l in list(self.container[short][key].values()):
                     # plot line
                     main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+                    for job in self.on_draw_job:
+                        job()
                     l.line2d_object.append(main_l)
         elif path.endswith('.txt'):
 

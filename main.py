@@ -99,8 +99,15 @@ class GUI:
         self.graph_frame = tkinter.Frame(self.root)
         self.graph_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.LEFT)
         self.line_frame = tkinter.Frame(self.graph_frame)
+        
+
+        
         self.right_frame = tkinter.Frame(self.root)
         self.right_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.RIGHT)
+        
+        self.tip_frame = tkinter.Frame(self.right_frame)
+        self.tip_frame.pack(fill=tkinter.BOTH, expand=0, side=tkinter.TOP)
+        
         self.curve_pref_frame = tkinter.Frame(self.right_frame)
         self.curve_pref_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.TOP)
         self.curve_pref_down = tkinter.Frame(self.right_frame)

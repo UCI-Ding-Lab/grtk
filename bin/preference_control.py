@@ -19,51 +19,74 @@ def do_nothing(event):
     return None
 
 
-class HoverTooltip:
-    def __init__(self, widget):
-        self.widget = widget
-        self.tooltip_window = None
-        self.last_item = None
-        self.delay = 500  # delay in milliseconds
-        self.id = None
+# class HoverTooltip:
+#     def __init__(self, widget):
+#         self.widget = widget
+#         self.tooltip_window = None
+#         self.last_item = None
+#         self.delay = 500  # delay in milliseconds
+#         self.id = None
         
-    def show_tooltip(self, item):
-        if self.tooltip_window:
-            self.tooltip_window.destroy()
-        # Extract the tag from the item
-        tag = self.widget.item(item, "tags")[0]
-        x = 0
-        y = 0
-        if self.widget.bbox(item) != None:
-            x, y, _, _ = self.widget.bbox(item)
+#     def show_tooltip(self, item):
+#         if self.tooltip_window:
+#             self.tooltip_window.destroy()
+#         # Extract the tag from the item
+#         tag = self.widget.item(item, "tags")[0]
+#         x = 0
+#         y = 0
+#         if self.widget.bbox(item) != None:
+#             x, y, _, _ = self.widget.bbox(item)
         
-        x += self.widget.winfo_rootx() + 20
-        y += self.widget.winfo_rooty() + 20
-        self.tooltip_window = tw = tk.Toplevel(self.widget)
-        tw.wm_overrideredirect(1)
-        tw.wm_geometry(f"+{x}+{y}")
-        label = tk.Label(tw, text=tag, background="#ffffe0", relief=tk.SOLID, borderwidth=1)
-        label.pack()
+#         x += self.widget.winfo_rootx() + 20
+#         y += self.widget.winfo_rooty() + 20
+#         self.tooltip_window = tw = tk.Toplevel(self.widget)
+#         tw.wm_overrideredirect(1)
+#         tw.wm_geometry(f"+{x}+{y}")
+#         label = tk.Label(tw, text=tag, background="#ffffe0", relief=tk.SOLID, borderwidth=1)
+#         label.pack()
 
-    def hide_tooltip(self, _=None):
-        if self.tooltip_window:
-            self.tooltip_window.destroy()
-            self.tooltip_window = None
+#     def hide_tooltip(self, _=None):
+#         if self.tooltip_window:
+#             self.tooltip_window.destroy()
+#             self.tooltip_window = None
 
-    def on_hover(self, event):
-        item = self.widget.identify_row(event.y)
-        if item != self.last_item:
-            self.hide_tooltip()
-            self.last_item = item
-            if item:
-                self.id = self.widget.after(self.delay, self.show_tooltip, item)
+#     def on_hover(self, event):
+#         item = self.widget.identify_row(event.y)
+#         if item != self.last_item:
+#             self.hide_tooltip()
+#             self.last_item = item
+#             if item:
+#                 self.id = self.widget.after(self.delay, self.show_tooltip, item)
 
-    def on_leave(self, _):
-        if self.id:
-            self.widget.after_cancel(self.id)
-        self.hide_tooltip()
+#     def on_leave(self, _):
+#         if self.id:
+#             self.widget.after_cancel(self.id)
+#         self.hide_tooltip()
 
-
+class Tooltip:
+    def __init__(self, tree, frame):
+        self.tree = tree
+        self.tooltip_var = tk.StringVar()
+        self.tooltip_canvas = tk.Canvas(frame, height=30)
+        self.tooltip_canvas.pack(fill=tk.BOTH, padx=5, pady=5)
+        self.tooltip_label = ttk.Label(self.tooltip_canvas, textvariable=self.tooltip_var, background="#f5f5f5", anchor="w")
+        self.tooltip_label_window = self.tooltip_canvas.create_window(0, 0, window=self.tooltip_label, anchor="nw")
+ 
+        self.tooltip_label.bind("<Configure>", lambda event: self.update_scrollregion(event))
+        self.tooltip_canvas.configure(xscrollcommand=self.tooltip_canvas.xview)
+        scrollbar = ttk.Scrollbar(frame, orient="horizontal", command=self.tooltip_canvas.xview)
+        scrollbar.pack(fill=tk.X)
+        self.tooltip_canvas.config(xscrollcommand=scrollbar.set)
+    
+    def update_scrollregion(self, event):
+        self.tooltip_canvas.configure(scrollregion=self.tooltip_canvas.bbox("all"))
+        
+    def on_select(self, event):
+        items = self.tree.selection()
+        if items:
+            tags = self.tree.item(items[0], "tags")
+            if tags:
+                self.tooltip_var.set(tags[0])
         
 
 
@@ -113,13 +136,18 @@ class perf_ctl(object):
                 for curve in list(self.container[file][type].keys()):
                     self.add_curve_to_file(file, type, curve)
         
+        
+        tp = Tooltip(self.tree, self.GUI.tip_frame)
+        
         # Init action
-        self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)  
+        self.tree.bind("<<TreeviewSelect>>", lambda event: \
+            [self.build_pref_options(event), tp.on_select(event)])  
         
         self.tree.bind("<Control-r>", lambda event: self.on_renaming(event)) #Double-1
-        tooltip = HoverTooltip(self.tree)
-        self.tree.bind("<Motion>", tooltip.on_hover)
-        self.tree.bind("<Leave>", tooltip.on_leave)
+        # tooltip = HoverTooltip(self.tree)
+        # self.tree.bind("<Motion>", tooltip.on_hover)
+        # self.tree.bind("<Leave>", tooltip.on_leave)
+        
         
         self.tree.pack(side="left", fill="both", expand=True)
         self.treebar.pack(side="right", fill="y")

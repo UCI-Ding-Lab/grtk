@@ -272,7 +272,8 @@ class perf_ctl(object):
         self.pref_marker.bind("<<ComboboxSelected>>", self.change_marker)
         self.sep4 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
         self.pref_marker_size_txt = tk.Label(self.pref_frame, text="Marker Size")
-        self.pref_marker_size = tk.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=0.1 ,command=self.change_marker_size ,textvariable=self.marker_size_var)
+        self.pref_marker_size = tk.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=1 ,command=self.change_marker_size ,textvariable=self.marker_size_var)
+        self.pref_marker_size.bind("<Return>", self.change_marker_size)
         self.sep5 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
         self.pref_marker_color_preview = tk.Label(self.pref_frame, text="__")
         self.pref_marker_color = tk.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
@@ -481,7 +482,7 @@ class perf_ctl(object):
             kwargs=kwargs,
         )
     
-    def change_marker_size(self):
+    def change_marker_size(self, bind_action=None):
         """record change in marker size variable
         """
         kwargs = {"markersize": self.marker_size_var.get()}

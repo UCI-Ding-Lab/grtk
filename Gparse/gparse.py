@@ -127,6 +127,14 @@ class gparse(object):
         else:
             with open(os.path.join(dir, self.default_combinedFile),"w") as f:
                 f.write(buf)
+    
+    def get_shape(self, file: str) -> tuple[int]:
+        with open(pathlib.Path(file), "r") as raw:
+            toList: list[str] = raw.read().split("\n")
+        rowCount: int = len(toList)
+        colCount: int = len(toList[0].split())
+        return (rowCount, colCount)
+
 
 if __name__ == "__main__":
     a = gparse()
@@ -171,5 +179,5 @@ if __name__ == "__main__":
             "35"
         ]
     )
-
+    print(a.get_shape("./UCSD_Data/000"))
         

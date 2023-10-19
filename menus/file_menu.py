@@ -142,7 +142,7 @@ class FileMenu():
             )
         else:
             filetypes = (
-                ('databases', '*.txt'),
+                ('text files', '*.txt'),
                 ('All files', '*.*')
             )
         if file_path == None:

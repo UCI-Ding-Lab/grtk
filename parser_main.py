@@ -55,17 +55,20 @@ class ParserGUI():
         self.top_frame = tk.Frame(root)
         self.top_frame.grid(row=0, column=0, sticky='nsew')
         
-        self.bottom_frame = tk.Frame(root)
+        self.bottom_frame = tk.Frame(root, bg='gray80')
         self.bottom_frame.grid(row=1, column=0, sticky='nsew')
         
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
         temp_placeholder = "Data Information:\n-Rows:\n-Columns:\n---------------\n" + \
-            "Configurations:\n-Assigned Curves:\n"
+            "Configuration Info:\n-Assigned Curves:\n"
         self.label = tk.Label(self.top_frame, text=temp_placeholder, bg="white", anchor='nw', justify='left')
         self.label.pack(fill=tk.BOTH, expand=True)
-        
+
+        self.config_label = tk.Label(self.bottom_frame, text="Configurations")
+        self.config_label.grid(row=0, column=0, sticky='nw')
+
         self.button3 = tk.Button(self.bottom_frame, text="Apply", command=lambda: self._file_menu_export())
         self.button3.grid(row=1, column=0, sticky='se', padx=5, pady=5)
 

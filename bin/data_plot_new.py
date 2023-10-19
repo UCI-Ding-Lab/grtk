@@ -86,17 +86,11 @@ class line_container(object):
                         job()
                     l.line2d_object.append(main_l)
         elif path.endswith('.txt'):
-
             key_list = list(load.read_txt(path, self.container))
-            # print(key_list)
             for short, key, i2 in key_list:
-                # print(short, key, i2)
                 l = self.container[short][key][i2]
-                # print(l.parameters["label"])
                 main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
                 l.line2d_object.append(main_l)
-                # l = None
-                # print(self.container[short][key][i2].parameters["label"])
                 
 
         

@@ -147,10 +147,27 @@ class ParserGUI():
     
     
     def _file_menu_load(self):
-        filetypes = (('All files', '*.*'),)
+        # file_path = None
+        # filetypes = None
+        # if type == 'gr':
+        #     filetypes = (
+        #         ('All files', '*.*'),
+        #         ('gr files', '*.gr'),
+        #         ('text files', '*.txt')
+        #     )
+        # else:
+        #     filetypes = (
+        #         ('text files', '*.txt'),
+        #         ('All files', '*.*')
+        #     )
+        # if file_path == None:
+        #     file_path = fd.askopenfilenames(
+        #         title='Open a file',
+        #         filetypes=filetypes)
+        filetypes = (('All files', '*.*'), ('text files', '*.txt'))
         self.file_paths = fd.askopenfilenames(
             title='Open a file',
-            filetypes=filetypes)
+            )#filetypes=filetypes
         # self.parser.proc_group(file_paths)
         self.row_count = 0
         self.col_count = 0

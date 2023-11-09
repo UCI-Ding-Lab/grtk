@@ -117,7 +117,7 @@ class gparse(object):
     def proc_combineDirectory(self, dir: str, new_fileName: str=None) -> None:
         buf = ""
         for filename in os.listdir(dir):
-            if filename.endswith(".DS_Store"):
+            if not filename.endswith(".gr"):
                 continue
             with open(os.path.join(dir, filename)) as f:
                 buf += f.read()+"\n"
@@ -127,6 +127,49 @@ class gparse(object):
         else:
             with open(os.path.join(dir, self.default_combinedFile),"w") as f:
                 f.write(buf)
+    
+    def proc_inteliCombine(self, dir: str, new_fileName: str=None) -> None:
+        buf: dict[str,np.ndarray] = {}
+        for filename in os.listdir(dir):
+            if not filename.endswith(".gr"):
+                continue
+            with open(os.path.join(dir, filename)) as f:
+                curveList = f.read().split(self.seperator+"\n")
+                for curve in curveList:
+                    dataPoints = curve.split("\n")
+                    keyName = dataPoints[1]+self.type_indicator+dataPoints[0]
+                    dataPoints = list(filter(None, dataPoints))
+                    contentInArray = np.array(
+                        [[float(x.split()[0]),
+                          float(x.split()[1])] for x in dataPoints[2:]])
+                    if keyName in buf.keys():
+                        buf[keyName] = np.vstack((buf[keyName],contentInArray))
+                    else:
+                        buf[keyName] = contentInArray
+        empty: bool = True
+        for filename in os.listdir(dir):
+            if filename == self.default_combinedFile:
+                raise ValueError("Combined File Already Exists")
+        if new_fileName != None:
+            parsedFile = open(pathlib.Path(new_fileName), "w")
+        else:
+            parsedFile = open(os.path.join(dir, self.default_combinedFile),"w")
+        for key, val in buf.items():
+            rows = ["{} {}".format(a, b) for a, b in buf[key]]
+            curveType = key.split(self.type_indicator)[1]
+            curveName = key.split(self.type_indicator)[0]
+            if empty:
+                text = "\n".join([curveType,curveName,"\n".join(rows)]) + "\n"
+                parsedFile.write(text)
+                empty = False
+            else:
+                text = "\n".join([self.seperator,curveType,curveName,"\n".join(rows)]) + "\n"
+                parsedFile.write(text)
+        parsedFile.close()
+        if new_fileName != None:
+            print(f"DONE: {pathlib.Path(new_fileName)}")
+        else:
+            print(f"DONE: {pathlib.Path(os.path.join(dir, self.default_combinedFile))}")
     
     def get_shape(self, file: str) -> tuple[int]:
         with open(pathlib.Path(file), "r") as raw:
@@ -139,7 +182,7 @@ class gparse(object):
 if __name__ == "__main__":
     a = gparse()
     a.proc_single(
-        "./UCSD_Data/000",
+        "./UCSD_Data/004",
         [
             "time",
             "01",
@@ -179,5 +222,4 @@ if __name__ == "__main__":
             "35"
         ]
     )
-    print(a.get_shape("./UCSD_Data/000"))
-        
+    a.proc_inteliCombine("./UCSD_Data")

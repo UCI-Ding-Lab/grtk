@@ -224,7 +224,7 @@ class ParserGUI():
         self.curve_names_label = tk.Label(self.bottom_frame, text="Assign Names: ",  anchor='nw', justify='left')
         self.curve_names_label.grid(row=0, column=0, sticky="nw")
   
-        self.curve_names_textbox = tk.Text(self.bottom_frame, height=1, width=70)
+        self.curve_names_textbox = tk.Text(self.bottom_frame, height=1, width=50)
         self.curve_names_textbox.grid(row=0, column=1, sticky="nw")
 
 

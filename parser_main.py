@@ -46,22 +46,40 @@ def do_nothing():
     return None
 
 class CheckButtonManager():
-    def __init__(self, frame):
+    def __init__(self, frame, textbox):
         self.check_buttons = []
         self.frame = frame
         self.counter = 1
+        self.textbox = textbox
         return None
     
     def add(self, name, checked=0):
+        var = tk.IntVar()
         self.check_buttons.append(\
-            tk.Checkbutton(self.frame, text=name, command=lambda: None))
-        self.check_buttons[self.counter-1].grid(row=self.counter, column=0, sticky="nw")
+            (tk.Checkbutton(self.frame, text=str(name), variable=var, command=self._refresh_textbox), var))
+        self.check_buttons[self.counter-1][0].grid(row=self.counter, column=0, sticky="nw")
         if checked == 1:
-            self.check_buttons[self.counter-1].select()
+            self.check_buttons[self.counter-1][0].select()
         self.counter += 1
         # self.radio_buttons.append(temp)
         # temp = None
         return None
+    def _refresh_textbox(self):
+        textbox_str = ""
+        temp_str_list = []
+        temp_str = ""
+        for button, var in self.check_buttons:
+            # if button.cget("text") == "time":
+            #     temp_str = "time/"
+            # self.textbox.append(button.cget("text"))
+            temp_str = str(button.cget("text"))
+            if var.get() == 0:
+                temp_str = temp_str + "_del"
+            temp_str_list.append(temp_str)
+            temp_str = ""
+        textbox_str = "/".join(temp_str_list)
+        self.textbox.delete(1.0,"end")
+        self.textbox.insert(1.0, textbox_str)
 
 class ParserGUI():
     def __init__(self, root):
@@ -160,7 +178,7 @@ class ParserGUI():
         self.middle_scrollbar.config(command=self.middle_canvas.yview)
         
         # Sample label inside the frame
-        middle_placeholder = "Assigned Curves:\n"
+        middle_placeholder = "Assigned Amount:\nAssigned Names:\n"
         self.middle_label = tk.Label(self.middle_frame, text=middle_placeholder, anchor='nw', justify='left')
         self.middle_label.grid(row=0, column=0, sticky="nw")
 
@@ -282,9 +300,12 @@ class ParserGUI():
             title='Open a file',
             )#filetypes=filetypes
         # self.parser.proc_group(file_paths)
+        for i in self.file_paths:
+            if i == "":
+                return
         self.row_count = 0
         self.col_count = 0
-        self.cbm = CheckButtonManager(self.bottom_frame)
+        self.cbm = CheckButtonManager(self.bottom_frame, self.curve_names_textbox)
         
         
         for f in self.file_paths:
@@ -296,9 +317,9 @@ class ParserGUI():
         default_assigned_names = "time"
         self.cbm.add("time", 1)
         for i in range(self.col_count-1):
-            default_assigned_names += f"/{i}"
+            default_assigned_names += f"/{i}_del"
             self.cbm.add(i)
-        self.curve_names_textbox.insert(tk.INSERT, default_assigned_names)
+        self.curve_names_textbox.insert(1.0, default_assigned_names) #tk.INSERT
         
         return None
     
@@ -307,10 +328,16 @@ class ParserGUI():
         user_input = self.curve_names_textbox.get("1.0", tk.END)
         user_input = re.sub(r"[\n\t\s]*", "", user_input)
         self.assigned_names = user_input.split("/")
-        temp_text = f"Assigned Amount: {len(self.assigned_names)}\nAssigned Names: "
+        assigned_names_text = "Assigned Names: \n"
+        count = 0
         for i in self.assigned_names:
-            temp_text += f" -{i} \n"
-        self.middle_label.config(text=temp_text)
+            if len(i) > 4 and i[-4:] == "_del":
+                continue
+            assigned_names_text += f" -{i} \n"
+            count += 1
+        assigned_amount_text = f"Assigned Amount: {count}\n"
+        temp_str = assigned_amount_text + assigned_names_text
+        self.middle_label.config(text=temp_str)
         return None
     
     

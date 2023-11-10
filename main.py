@@ -34,10 +34,6 @@ class GUI:
         # GLB SETTINGS
         # WARNING: optimise involves with a simplification subsampling of data
         self.optimize = False
-        self.debug_mode = True
-        
-        if self.debug_mode:
-            os.system('cls' if os.name=='nt' else 'clear')
         
         # init menu
         self.menu_obj: dict[str, object] = {}
@@ -56,8 +52,9 @@ class GUI:
         self._window()
         
         # load all modules
+        # Warning: the order of the following lines matters
         self.setting = set.setting()
-        self.log = logger()
+        self.log = logger(self)
         self.menu_bar = tkinter.Menu(root)
         self.operation = operation.operations()
         self.container = data_plot_new.line_container(gui=self)
@@ -89,7 +86,7 @@ class GUI:
         # save quit process
         root.protocol("WM_DELETE_WINDOW", self._quit_process)
         root.mainloop()
-        self.log._close()
+        self.log.close()
     
     def _init_frames(self):
         """left and right frame initialization
@@ -102,16 +99,16 @@ class GUI:
         
 
         
-        self.right_frame = tkinter.Frame(self.root)
+        self.right_frame = tkinter.Frame(self.root, bg="white")
         self.right_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.RIGHT)
         
-        self.curve_pref_frame = tkinter.Frame(self.right_frame)
+        self.curve_pref_frame = tkinter.Frame(self.right_frame, bg="white")
         self.curve_pref_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.TOP)
-        self.curve_pref_down = tkinter.Frame(self.right_frame)
+        self.curve_pref_down = tkinter.Frame(self.right_frame, bg="white")
         self.curve_pref_down.pack(fill=tkinter.BOTH, expand=1, side=tkinter.TOP)
-        self.tip_frame = tkinter.Frame(self.right_frame)
+        self.tip_frame = tkinter.Frame(self.right_frame, bg="white")
         self.tip_frame.pack(fill=tkinter.BOTH, expand=0, side=tkinter.TOP)
-        self.global_pref_frame = tkinter.Frame(self.right_frame)
+        self.global_pref_frame = tkinter.Frame(self.right_frame, bg="white")
         self.global_pref_frame.pack(fill=tkinter.X, side=tkinter.BOTTOM)
         
     def _window(self):

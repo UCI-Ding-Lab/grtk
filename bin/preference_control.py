@@ -21,9 +21,9 @@ class Tooltip:
     def __init__(self, tree, frame):
         self.tree = tree
         self.tooltip_var = tk.StringVar()
-        self.tooltip_canvas = tk.Canvas(frame, height=30)
+        self.tooltip_canvas = tk.Canvas(frame, height=30, background="white", highlightthickness=0)
         self.tooltip_canvas.pack(fill=tk.BOTH, padx=5, pady=5)
-        self.tooltip_label = ttk.Label(self.tooltip_canvas, textvariable=self.tooltip_var, background="#f5f5f5", anchor="w")
+        self.tooltip_label = ttk.Label(self.tooltip_canvas, textvariable=self.tooltip_var, background="white", anchor="w")
         self.tooltip_label_window = self.tooltip_canvas.create_window(0, 0, window=self.tooltip_label, anchor="nw")
  
         self.tooltip_label.bind("<Configure>", lambda event: self.update_scrollregion(event))
@@ -70,7 +70,12 @@ class perf_ctl(object):
         
         # scrpll style
         style = ttk.Style()
-        style.theme_use('classic')
+        style.theme_use('clam')
+        style.configure(
+            "red.Horizontal.TProgressbar",
+            foreground=self.GUI.setting.PROGRESS_BAR_COLOR_FG,
+            background=self.GUI.setting.PROGRESS_BAR_COLOR_BG
+        )
 
         # Tree
         self.tree = ttk.Treeview(self.structure, selectmode='browse')

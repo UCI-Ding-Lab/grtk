@@ -1,12 +1,12 @@
 # lib
 import colorsys
 import tkinter
+from tkinter import ttk
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # type: ignore
 import matplotlib.style as mplstyle
 from time import time
-import numpy
 import pathlib
 import random
 
@@ -26,7 +26,7 @@ class line_container(object):
         self.frame: tkinter.Frame = self.gui.line_frame
         self.show_legend: bool = False
         self.color_rand = lambda: random.randint(128,255)
-        if self.gui.optimize:
+        if self.gui.setting.OPTIMIZE:
             mplstyle.use('fast')
             
         # plugins
@@ -72,19 +72,55 @@ class line_container(object):
             ValueError: line already loaded
         """
         # start timer
-        start_time = time()
+        self.gui.log.timerStart("line_container.load_and_plot")
         short = pathlib.Path(path).name
         
         # if not, load line
         if path.endswith('.gr'):
-            load.read_file(path, self.container)
+            # readfile
+            self.gui.log.timerStart("line_container.load_and_plot/load.read_file")
+            load.read_file(path, self.container, self.gui.log)
+            self.gui.log.timerEnd("line_container.load_and_plot/load.read_file")
+            
+            # progressbar init
+            self.gui.log.timerStart("line_container.load_and_plot/progressbar_init")
+            ttlLines = 0
+            for key in list(self.container[short].keys()):
+                ttlLines += len(list(self.container[short][key].values()))
+            progressbar = ttk.Progressbar(
+                self.gui.tip_frame,
+                maximum=ttlLines,
+                length=300,
+                style="red.Horizontal.TProgressbar"
+            )
+            progressbar.pack()
+            self.gui.log.timerEnd("line_container.load_and_plot/progressbar_init")
+            
+            # plot dict
+            self.gui.log.timerStart("line_container.load_and_plot/plot_dict")
             for key in list(self.container[short].keys()):
                 for l in list(self.container[short][key].values()):
                     # plot line
-                    main_l, = self.matplot_subplot.plot(*l.plt_cords, **l.parameters)
+                    self.gui.log.timerStart(f"line_container.load_and_plot/plot_{l.nick}")
+                    main_l, = self.matplot_subplot.plot(l.abs_cords_x, l.abs_cords_y, **l.parameters)
+                    self.gui.log.timerEnd(f"line_container.load_and_plot/plot_{l.nick}")
+                    # plugin router
+                    self.gui.log.timerStart(f"line_container.load_and_plot/plot_{l.nick}_plugin")
                     for job in self.on_draw_job:
                         job()
+                    self.gui.log.timerEnd(f"line_container.load_and_plot/plot_{l.nick}_plugin")
+                    # store reference
                     l.line2d_object.append(main_l)
+                    # enhance progressbar
+                    self.gui.log.timerStart(f"line_container.load_and_plot/plot_{l.nick}_pgbarstep")
+                    progressbar.step()
+                    self.gui.log.timerEnd(f"line_container.load_and_plot/plot_{l.nick}_pgbarstep")
+                    self.gui.log.timerStart(f"line_container.load_and_plot/plot_{l.nick}_update")
+                    #self.gui.tip_frame.update_idletasks()
+                    self.gui.log.timerEnd(f"line_container.load_and_plot/plot_{l.nick}_update")
+            self.gui.log.timerEnd("line_container.load_and_plot/plot_dict")
+            
+            progressbar.destroy()
         elif path.endswith('.txt'):
             key_list = list(load.read_txt(path, self.container))
             for short, key, i2 in key_list:
@@ -97,18 +133,14 @@ class line_container(object):
         # refresh canvas and stop timer
         self._refresh_canvas()
         self.gui.pref.refresh()
-        end_time = time()
-        print("[GRTK] graph loaded: ", round((end_time-start_time)*1000, 2), "ms")
+        self.gui.log.timerEnd("line_container.load_and_plot")
     
     def load_and_plot_obj(self, target: load.single_line):
-        start_time = time()
         main_l, = self.matplot_subplot.plot(*target.plt_cords, **target.parameters)
         target.line2d_object.append(main_l)
         self.container[target.parent][target.curve_type][target.nick] = target
         self._refresh_canvas()
         self.gui.pref.refresh()
-        end_time = time()
-        print("[GRTK] new object graphed: ", round((end_time-start_time)*1000, 2), "ms")
     
     def change_line_preference(self, path: str, type: str, curve: str, kwargs: dict) -> None:
         """update line preference from kwargs
@@ -118,16 +150,11 @@ class line_container(object):
             path (str): full path of line
             kwargs (dict): parameters to update
         """
-        # start timer
-        start_time = time()
-        
         # update line preference
         self.container[path][type][curve].line2d_object[0].update(kwargs)
         
-        # refresh canvas and stop timer
+        # refresh canvas
         self._refresh_canvas()
-        end_time = time()
-        print("[GRTK] pref changed: ", round((end_time-start_time)*1000, 2), "ms")
         self._set_GUI_saved_false()
     
     def _refresh_canvas(self) -> None:

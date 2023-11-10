@@ -2,12 +2,19 @@ from matplotlib import lines
 import numpy as np
 import pathlib
 from bin.set import setting
-# from bin.db_manager import DBManager
 from bin.save_manager import SaveManager
-import os
-import copy
 import random
 import colorsys
+import threading
+from multiprocessing.pool import ThreadPool
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import main
+    from helper import load
+    from matplotlib import axes
+    from logger import logger
+
 
 class single_line(object):
     def __init__(self, curve: str, type: str, file: str, cords: np.ndarray, file_path: str=None):
@@ -48,12 +55,12 @@ class single_line(object):
 
         # seperate xy
         # shape: (n,)
-        self.abs_cords_x = np.array(cords[0])
-        self.abs_cords_y = np.array(cords[1])
+        self.abs_cords_x = cords[:,0]
+        self.abs_cords_y = cords[:,1]
         
         # together xy
         # shape: (2, n)
-        self.plt_cords = np.array([cords[0], cords[1]])
+        self.plt_cords = cords
         # shape: (n, 2)
         self.plt_cords_T = self.plt_cords.transpose()
 
@@ -64,7 +71,7 @@ class single_line(object):
         # if the curve is not native to the lab data.
         self.tip = "native"
 
-def read_file(dir: str, container) -> None:
+def read_file(dir: str, container, logger: "logger") -> None:
     """read file from path and build a single_line object
 
     Args:
@@ -76,36 +83,37 @@ def read_file(dir: str, container) -> None:
     SEPERATOR = "\n" + setting.SPERATOR + "\n"
     short = pathlib.Path(dir).name
     with open(dir, "r") as target:
+        logger.timerStart("read_file")
         all_data = target.read()
+        logger.timerEnd("read_file")
         while all_data[-1:] == "\n":
             all_data = all_data[:-1]
         if SEPERATOR in all_data:
             layers_raw = all_data.split(SEPERATOR)
             for i in layers_raw:
                 temp = i.split("\n")
-                curve_x = []
-                curve_y = []
-                container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y, dir)
+                container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
         else:
             temp = all_data.split("\n")
-            curve_x = []
-            curve_y = []
-            container[short][temp[0]][temp[1]] = read_file_helper(short, temp, curve_x, curve_y, dir)
+            container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
 
 
-def read_file_helper(
-    dir: str, aftersplit: list[str], curve_x: list[float], curve_y: list[float], file_path: str
-) -> single_line:
+def read_file_helper(dir: str, aftersplit: list[str], file_path: str, logger: "logger") -> single_line:
     if " " in aftersplit[2]:
-        for o in aftersplit[2:]:
-            curve_x.append(float(o.split(" ")[0]))
-            curve_y.append(float(o.split(" ")[1]))
+        logger.timerStart(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
+        string = " ".join(aftersplit[2:])
+        cords = np.fromstring(string, sep=" ", dtype=float).reshape(-1, 2)
+        logger.timerEnd(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
     else:
-        for index, val in enumerate(aftersplit[2:]):
-            curve_x.append(float(index))
-            curve_y.append(float(val))
-    cords = np.array([np.array(curve_x), np.array(curve_y)])
+        logger.timerStart(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
+        string = " ".join(aftersplit[2:])
+        curve_x = np.arange(len(aftersplit[2:])).reshape(-1, 1)
+        curve_y = np.fromstring(string, sep=" ", dtype=float).reshape(-1, 1)
+        cords = np.concatenate((curve_x, curve_y), axis=1)
+        logger.timerEnd(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
+    logger.timerStart(f"object_formed_{aftersplit[1]}_{aftersplit[0]}")
     single_line_object = single_line(aftersplit[1], aftersplit[0], dir, cords, file_path)
+    logger.timerEnd(f"object_formed_{aftersplit[1]}_{aftersplit[0]}")
     return single_line_object
 
 def read_txt(dir: str, container) -> None:

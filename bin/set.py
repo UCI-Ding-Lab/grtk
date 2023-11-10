@@ -35,6 +35,11 @@ class setting(object):
         facecolor="white",
         edgecolor="white",
     )
+    PROGRESS_BAR_COLOR_FG = "green"
+    PROGRESS_BAR_COLOR_BG = "green"
+    DEBUG_MODE = True
+    DEBUG_PRINT = True
+    OPTIMIZE = False
 
     def __init__(self):
         pass

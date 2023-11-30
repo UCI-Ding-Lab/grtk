@@ -31,8 +31,10 @@ class SaveManager():
                 f.write(f"pref_marker_edge_color={i[9]}\n")
                 f.write(f"tip={i[10]}\n")
                 f.write("coords(x,y)=\n")
-                for j in i[11]:
-                    f.write(f"{j[0]},{j[1]}\n")
+                for x, y in i[11]:
+                    # f.write(f"{j[0]},{j[1]}\n")
+                    # f.write(f"{j},{i[11][1][j]}\n")
+                    f.write(f"{x},{y}\n")
                 f.write("--end\n")
         return None
   

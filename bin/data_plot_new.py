@@ -276,7 +276,7 @@ class line_container(object):
                         self.container[i][j][r].line2d_object[0].get_markerfacecolor(), \
                         self.container[i][j][r].line2d_object[0].get_markeredgecolor(), \
                         self.container[i][j][r].tip, \
-                        self.container[i][j][r].plt_cords_T))
+                        self.container[i][j][r].plt_cords))
         return temp
                     # print(i, j, r)
         #             print(self.container[i][j][r].plt_cords)

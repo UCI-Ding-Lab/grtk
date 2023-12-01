@@ -34,13 +34,14 @@
 #     root, app = main()
 
 
-
+# 100MB for 3 hrs
 
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import filedialog as fd
 import re
 from Gparse.gparse import gparse
+from tkinter import messagebox 
 
 def do_nothing():
     return None
@@ -311,7 +312,10 @@ class ParserGUI():
         for f in self.file_paths:
             temp = self.parser.get_shape(f)
             self.row_count += temp[0]
-            self.col_count += temp[1]
+            if self.col_count == 0:
+                self.col_count += temp[1]
+            elif temp[1] != self.col_count:
+                raise ValueError("File columns do not match.")
         self.top_label.config(text=f"Rows: {self.row_count}\nColumns: {self.col_count}\n")
         
         default_assigned_names = "time"
@@ -343,6 +347,7 @@ class ParserGUI():
     
     def _file_menu_export(self):
         self.parser.proc_group(self.file_paths, self.assigned_names)
+        messagebox.showinfo("Notification", "Files exported successfully!") 
         return None
     
     def _help_menu_user_manual(self):

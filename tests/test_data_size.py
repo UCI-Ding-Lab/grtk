@@ -1,7 +1,10 @@
 import random
 import struct
 import time
-
+"""
+This is really useful.
+https://stackoverflow.com/a/34164133/21247747
+"""
 def get_random_float():
     return random.uniform(0, 2000)
 
@@ -72,6 +75,7 @@ def load_dat(filename):
 # Example usage
 if __name__ == "__main__":
     """3 hours of data with 36 columns"""
+    print("Generating 3 hrs of test data...")
     float_list = get_float_list()
     # print(float_list[0])
     
@@ -80,6 +84,7 @@ if __name__ == "__main__":
     # print("save_text::", "--- %s seconds ---" % (time.time() - start_time))
     
     """Takes roughly 12 seconds with a file size of 1.83 GB"""
+    print("Saving data to file...")
     start_time = time.time()
     save_dat(float_list)
     print("save_dat::", "--- %s seconds ---" % (time.time() - start_time))
@@ -93,6 +98,7 @@ if __name__ == "__main__":
     # print("text::", data[0])
     
     """Takes roughly 217 seconds / 3.7 minutes"""
+    print("Loading data from file...")
     start_time = time.time()
     data = load_dat('test_data.dat')
     print("load_dat::", "--- %s seconds ---" % (time.time() - start_time))

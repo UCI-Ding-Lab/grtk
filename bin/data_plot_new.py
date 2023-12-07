@@ -116,7 +116,7 @@ class line_container(object):
                     progressbar.step()
                     self.gui.log.timerEnd(f"line_container.load_and_plot/plot_{l.nick}_pgbarstep")
                     self.gui.log.timerStart(f"line_container.load_and_plot/plot_{l.nick}_update")
-                    #self.gui.tip_frame.update_idletasks()
+                    self.gui.tip_frame.update_idletasks()
                     self.gui.log.timerEnd(f"line_container.load_and_plot/plot_{l.nick}_update")
             self.gui.log.timerEnd("line_container.load_and_plot/plot_dict")
             

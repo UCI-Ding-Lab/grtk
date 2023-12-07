@@ -5,8 +5,6 @@ from bin.set import setting
 from bin.save_manager import SaveManager
 import random
 import colorsys
-import threading
-from multiprocessing.pool import ThreadPool
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -82,20 +80,45 @@ def read_file(dir: str, container, logger: "logger") -> None:
     """
     SEPERATOR = "\n" + setting.SPERATOR + "\n"
     short = pathlib.Path(dir).name
-    with open(dir, "r") as target:
+    bufSize = setting.BUFFER_SIZE_KB * 1024 if setting.BUFFER_SIZE_KB > 0 else -1
+    with open(dir, "r", buffering=bufSize) as target:
         logger.timerStart("read_file")
         all_data = target.read()
         logger.timerEnd("read_file")
         while all_data[-1:] == "\n":
             all_data = all_data[:-1]
-        if SEPERATOR in all_data:
-            layers_raw = all_data.split(SEPERATOR)
-            for i in layers_raw:
-                temp = i.split("\n")
-                container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
-        else:
-            temp = all_data.split("\n")
-            container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
+        str = ""
+        l = 0
+        while "[GRTK]" not in str:
+            l -= 1
+            str = all_data[l:]
+        info = str.split(",")
+        trunkLength = int(info[1])
+        trunkInfo = [tuple(item.split('/')) for item in info[2:]]
+        logger.timerStart(f"data_str_formed")
+        data = all_data[:l].replace("\n", " ")
+        logger.timerEnd(f"data_str_formed")
+        logger.timerStart(f"data_np_formed")
+        be4split = np.fromstring(data, sep=" ", dtype=float).reshape(-1, 2)
+        logger.timerEnd(f"data_np_formed")
+        logger.timerStart(f"data_obj_formed")
+        for i in range(len(trunkInfo)):
+            temp = be4split[i*trunkLength:(i+1)*trunkLength]
+            container[short][trunkInfo[i][0]][trunkInfo[i][1]] = single_line(
+                trunkInfo[i][1],
+                trunkInfo[i][0],
+                short, temp, dir
+            )
+        logger.timerEnd(f"data_obj_formed")
+        # else:
+        #     if SEPERATOR in all_data:
+        #         layers_raw = all_data.split(SEPERATOR)
+        #         for i in layers_raw:
+        #             temp = i.split("\n")
+        #             container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
+        #     else:
+        #         temp = all_data.split("\n")
+        #         container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
 
 
 def read_file_helper(dir: str, aftersplit: list[str], file_path: str, logger: "logger") -> single_line:

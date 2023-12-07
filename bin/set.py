@@ -40,6 +40,7 @@ class setting(object):
     DEBUG_MODE = True
     DEBUG_PRINT = True
     OPTIMIZE = False
+    BUFFER_SIZE_KB = -1
 
     def __init__(self):
         pass

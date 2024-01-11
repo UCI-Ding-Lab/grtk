@@ -76,10 +76,13 @@ class line_container(object):
         short = pathlib.Path(path).name
         
         # if not, load line
-        if path.endswith('.gr'):
+        if path.endswith('.gr') or path.endswith('.gz'):
             # readfile
             self.gui.log.timerStart("line_container.load_and_plot/load.read_file")
-            load.read_file(path, self.container, self.gui.log)
+            if path.endswith('.gr'):
+                load.read_file(path, self.container, self.gui.log)
+            elif path.endswith('.gz'):
+                load.read_gzip(path, self.container, self.gui.log)
             self.gui.log.timerEnd("line_container.load_and_plot/load.read_file")
             
             # progressbar init

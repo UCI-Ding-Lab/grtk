@@ -110,8 +110,9 @@ class FileMenu():
     def _init_file_menu(self):
         self.fm = tkinter.Menu(self.GUI.menu_bar, tearoff=0)
         self.fm.add_command(label="Test OpenGL", command=do_nothing)
-        self.fm.add_command(label="Load Gr File", command=self._load_file)
+        self.fm.add_command(label="Load GR File", command=self._load_file)
         self.fm.add_command(label="Load TXT File", command=self._load_txt_file)
+        self.fm.add_command(label="Load GZ File", command=lambda: self._load_file(type='gz'))
         self.RFM.add_recent_menu()
 
         self.fm.add_command(label="Save", command=self._save, accelerator="Ctrl+S")
@@ -136,9 +137,11 @@ class FileMenu():
         filetypes = None
         if type == 'gr':
             filetypes = (
-                ('All files', '*.*'),
                 ('gr files', '*.gr'),
-                ('text files', '*.txt')
+            )
+        elif type == 'gz':
+            filetypes = (
+                ('gz files', '*.gz'),
             )
         else:
             filetypes = (
@@ -164,7 +167,7 @@ class FileMenu():
                 return
             
             
-            if i.endswith(".gr"):
+            if i.endswith(".gr") or i.endswith(".gz"):
                 self.line_container.load_and_plot(path=i)
                 self._set_GUI_saved_false()
             elif i.endswith(".txt"):

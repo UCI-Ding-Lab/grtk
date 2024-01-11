@@ -5,6 +5,8 @@ from bin.set import setting
 from bin.save_manager import SaveManager
 import random
 import colorsys
+from io import StringIO
+import gzip
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -44,6 +46,7 @@ class single_line(object):
             self.parameters = dict(linewidth=0.5,color="white")
         self.parameters["label"] = f"{file}@{type}@{curve}"
         
+        # generate random color for data curve
         if self.curve_type == "data":
             h = random.randint(0, 360)/360
             s = 1
@@ -95,12 +98,17 @@ def read_file(dir: str, container, logger: "logger") -> None:
         info = str.split(",")
         trunkLength = int(info[1])
         trunkInfo = [tuple(item.split('/')) for item in info[2:]]
+        
         logger.timerStart(f"data_str_formed")
-        data = all_data[:l].replace("\n", " ")
+        toIO = StringIO(all_data[:l])
+        # data = all_data[:l].replace("\n", " ")
         logger.timerEnd(f"data_str_formed")
+        
         logger.timerStart(f"data_np_formed")
-        be4split = np.fromstring(data, sep=" ", dtype=float).reshape(-1, 2)
+        # be4split = np.fromstring(data, sep=" ", dtype=float).reshape(-1, 2)
+        be4split = np.loadtxt(toIO, dtype=float).reshape(-1, 2)
         logger.timerEnd(f"data_np_formed")
+        
         logger.timerStart(f"data_obj_formed")
         for i in range(len(trunkInfo)):
             temp = be4split[i*trunkLength:(i+1)*trunkLength]
@@ -110,34 +118,52 @@ def read_file(dir: str, container, logger: "logger") -> None:
                 short, temp, dir
             )
         logger.timerEnd(f"data_obj_formed")
-        # else:
-        #     if SEPERATOR in all_data:
-        #         layers_raw = all_data.split(SEPERATOR)
-        #         for i in layers_raw:
-        #             temp = i.split("\n")
-        #             container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
-        #     else:
-        #         temp = all_data.split("\n")
-        #         container[short][temp[0]][temp[1]] = read_file_helper(short, temp, dir, logger)
 
+def read_gzip(dir: str, container, logger: "logger") -> None:
+    """read gzip file from path and build a single_line object
 
-def read_file_helper(dir: str, aftersplit: list[str], file_path: str, logger: "logger") -> single_line:
-    if " " in aftersplit[2]:
-        logger.timerStart(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
-        string = " ".join(aftersplit[2:])
-        cords = np.fromstring(string, sep=" ", dtype=float).reshape(-1, 2)
-        logger.timerEnd(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
-    else:
-        logger.timerStart(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
-        string = " ".join(aftersplit[2:])
-        curve_x = np.arange(len(aftersplit[2:])).reshape(-1, 1)
-        curve_y = np.fromstring(string, sep=" ", dtype=float).reshape(-1, 1)
-        cords = np.concatenate((curve_x, curve_y), axis=1)
-        logger.timerEnd(f"np_array_formed_{aftersplit[1]}_{aftersplit[0]}")
-    logger.timerStart(f"object_formed_{aftersplit[1]}_{aftersplit[0]}")
-    single_line_object = single_line(aftersplit[1], aftersplit[0], dir, cords, file_path)
-    logger.timerEnd(f"object_formed_{aftersplit[1]}_{aftersplit[0]}")
-    return single_line_object
+    Args:
+        dir (str): full file path
+
+    Returns:
+        single_line: single line object reference
+    """
+    SEPERATOR = "\n" + setting.SPERATOR + "\n"
+    short = pathlib.Path(dir).name
+    with gzip.open(dir, "rt") as target:
+        logger.timerStart("read_gzip")
+        all_data = target.read()
+        logger.timerEnd("read_gzip")
+        while all_data[-1:] == "\n":
+            all_data = all_data[:-1]
+        str = ""
+        l = 0
+        while "[GRTK]" not in str:
+            l -= 1
+            str = all_data[l:]
+        info = str.split(",")
+        trunkLength = int(info[1])
+        trunkInfo = [tuple(item.split('/')) for item in info[2:]]
+        
+        logger.timerStart(f"data_str_formed")
+        toIO = StringIO(all_data[:l])
+        # data = all_data[:l].replace("\n", " ")
+        logger.timerEnd(f"data_str_formed")
+        
+        logger.timerStart(f"data_np_formed")
+        # be4split = np.fromstring(data, sep=" ", dtype=float).reshape(-1, 2)
+        be4split = np.loadtxt(toIO, dtype=float).reshape(-1, 2)
+        logger.timerEnd(f"data_np_formed")
+        
+        logger.timerStart(f"data_obj_formed")
+        for i in range(len(trunkInfo)):
+            temp = be4split[i*trunkLength:(i+1)*trunkLength]
+            container[short][trunkInfo[i][0]][trunkInfo[i][1]] = single_line(
+                trunkInfo[i][1],
+                trunkInfo[i][0],
+                short, temp, dir
+            )
+        logger.timerEnd(f"data_obj_formed")
 
 def read_txt(dir: str, container) -> None:
     """load db from path dir and build container

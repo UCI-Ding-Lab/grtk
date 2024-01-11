@@ -61,6 +61,9 @@ class GUI:
         self.pref = preference_control.perf_ctl(self)
         self.lasso = selector.lasso(self)
         self.usr_cus = custom.labCustom()
+
+        # style
+        self._stylesheet()
         
         # plugin router
         self.on_draw = states.on_draw(self)
@@ -119,12 +122,25 @@ class GUI:
             ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0)
             self.root.tk.call('tk', 'scaling', ScaleFactor/75)
             self.root.title('GRTK: Data Visualization Software')
-            width = 1125 * ScaleFactor/90
+            width = 1200 * ScaleFactor/90
             height = 800 * ScaleFactor/90
             self.root.geometry(str(int(width)) + 'x' + str(int(height)))
         else:
             self.root.title('GRTK: Data Visualization Software')
             self.root.geometry('1125x800')
+    
+    def _stylesheet(self):
+        """set style
+        """
+        style = tkinter.ttk.Style(self.root)
+        style.theme_use('clam')
+        style.configure(
+            "red.Horizontal.TProgressbar",
+            foreground=self.setting.PROGRESS_BAR_COLOR_FG,
+            background=self.setting.PROGRESS_BAR_COLOR_BG
+        )
+        if sys.platform == 'win32':
+            style.configure('Treeview', rowheight=40)
     
     def _menu_bar_main(self):
         """initializations of each tool bar selection

@@ -2,6 +2,7 @@ import math
 import tkinter as tk
 from tkinter import ttk, simpledialog
 from tkinter import colorchooser
+import sys
 
 from helper import markerlib
 
@@ -67,15 +68,6 @@ class perf_ctl(object):
         # structure initialization
         self.structure = self.GUI.curve_pref_frame
         self.specific = self.GUI.curve_pref_down
-        
-        # scrpll style
-        style = ttk.Style()
-        style.theme_use('clam')
-        style.configure(
-            "red.Horizontal.TProgressbar",
-            foreground=self.GUI.setting.PROGRESS_BAR_COLOR_FG,
-            background=self.GUI.setting.PROGRESS_BAR_COLOR_BG
-        )
 
         # Tree
         self.tree = ttk.Treeview(self.structure, selectmode='browse')

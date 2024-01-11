@@ -51,7 +51,7 @@ class line_container(object):
     
     def _figure_initialization(self) -> None:
         if sys.platform == "win32":
-            self.matplot_figure: Figure = Figure(figsize = (4, 5), dpi = 100)
+            self.matplot_figure: Figure = Figure(figsize = (4, 4), dpi = 100)
         else:
             self.matplot_figure: Figure = Figure(figsize = (8, 5), dpi = 100)
         self.matplot_subplot: Axes = self.matplot_figure.add_subplot(1,1,1) # type: ignore

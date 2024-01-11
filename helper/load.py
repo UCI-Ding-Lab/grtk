@@ -7,6 +7,7 @@ import random
 import colorsys
 from io import StringIO
 import gzip
+import sys
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -101,11 +102,9 @@ def read_file(dir: str, container, logger: "logger") -> None:
         
         logger.timerStart(f"data_str_formed")
         toIO = StringIO(all_data[:l])
-        # data = all_data[:l].replace("\n", " ")
         logger.timerEnd(f"data_str_formed")
         
         logger.timerStart(f"data_np_formed")
-        # be4split = np.fromstring(data, sep=" ", dtype=float).reshape(-1, 2)
         be4split = np.loadtxt(toIO, dtype=float).reshape(-1, 2)
         logger.timerEnd(f"data_np_formed")
         

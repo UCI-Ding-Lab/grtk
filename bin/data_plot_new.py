@@ -49,7 +49,7 @@ class line_container(object):
         self._figure_initialization()
     
     def _figure_initialization(self) -> None:
-        self.matplot_figure: Figure = Figure(figsize = (8, 5), dpi = 100)
+        self.matplot_figure: Figure = Figure(figsize = (4, 5), dpi = 100)
         self.matplot_subplot: Axes = self.matplot_figure.add_subplot(1,1,1) # type: ignore
         self.change_color_theme(theme="dark")
         self.matplot_subplot.grid(color="grey", visible=True)

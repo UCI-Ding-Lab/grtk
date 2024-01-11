@@ -2,7 +2,7 @@
 import tkinter
 import tkinter.ttk
 import tkinter.messagebox
-import os
+import ctypes
 import sys
 
 # files
@@ -114,8 +114,13 @@ class GUI:
     def _window(self):
         """set title and window size
         """
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0)
+        self.root.tk.call('tk', 'scaling', ScaleFactor/75)
         self.root.title('Data Visualization Software')
-        self.root.geometry("1125x800")
+        width = 1125 * ScaleFactor/90
+        height = 800 * ScaleFactor/90
+        self.root.geometry(str(int(width)) + 'x' + str(int(height)))
     
     def _menu_bar_main(self):
         """initializations of each tool bar selection

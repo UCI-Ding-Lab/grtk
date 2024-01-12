@@ -116,18 +116,20 @@ class GUI:
         """set title and window size
         """
         if sys.platform == 'win32':
+            appId = self.setting.APP_ID
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
             ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0)
             self.root.tk.call('tk', 'scaling', ScaleFactor/75)
-            self.root.title(self.setting.NAME)
             width = self.setting.WIN_GUI_WIDTH * ScaleFactor/self.setting.WIN_SCALE_DIVIDER
             height = self.setting.WIN_GUI_HEIGHT * ScaleFactor/self.setting.WIN_SCALE_DIVIDER
             self.root.geometry(str(int(width)) + 'x' + str(int(height)))
         else:
             self.root.tk.call('tk', 'scaling', 1.2)
-            self.root.title(self.setting.NAME)
             self.root.geometry(str(self.setting.UNX_GUI_WIDTH) + 'x' + str(self.setting.UNX_GUI_HEIGHT))
-    
+        self.root.iconbitmap(self.setting.FAVICON)
+        self.root.title(self.setting.NAME)
+        
     def _stylesheet(self):
         """set style
         """

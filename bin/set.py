@@ -98,6 +98,8 @@ class setting(object):
     
     # GUI settings
     NAME = "GRTK: Data Visualization Software"
+    FAVICON = "favicon.ico"
+    APP_ID = "DingLab.GRTK"
     WIN_GUI_WIDTH = 1200
     WIN_GUI_HEIGHT = 800
     WIN_SCALE_DIVIDER = 90

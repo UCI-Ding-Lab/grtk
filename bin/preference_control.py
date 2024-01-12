@@ -254,9 +254,9 @@ class perf_ctl(object):
     def pack_all_high_level(self):
         """pack all high level widgets
         """
-        self.high_level_frame.pack(expand=True, fill=tk.X, padx=10)
-        self.high_level_show_line.pack(expand=True, fill=tk.X)
-        self.high_level_hide_line.pack(expand=True, fill=tk.X)
+        self.high_level_frame.pack(expand=True, fill=tk.BOTH, padx=10)
+        self.high_level_show_line.pack(fill=tk.X)
+        self.high_level_hide_line.pack(fill=tk.X)
         # refresh frame
         self.high_level_frame.update()
     

@@ -1,7 +1,8 @@
 import math
-import tkinter
-from tkinter import ttk
+import tkinter as tk
+from tkinter import ttk, simpledialog
 from tkinter import colorchooser
+import sys
 
 from helper import markerlib
 
@@ -13,6 +14,37 @@ if TYPE_CHECKING:
     from helper import load
     from matplotlib import axes
 
+
+def do_nothing(event):
+    return None
+
+class Tooltip:
+    def __init__(self, tree, frame):
+        self.tree = tree
+        self.tooltip_var = tk.StringVar()
+        self.tooltip_canvas = tk.Canvas(frame, height=30, background="white", highlightthickness=0)
+        self.tooltip_canvas.pack(fill=tk.BOTH, padx=5, pady=5)
+        self.tooltip_label = ttk.Label(self.tooltip_canvas, textvariable=self.tooltip_var, background="white", anchor="w")
+        self.tooltip_label_window = self.tooltip_canvas.create_window(0, 0, window=self.tooltip_label, anchor="nw")
+ 
+        self.tooltip_label.bind("<Configure>", lambda event: self.update_scrollregion(event))
+        self.tooltip_canvas.configure(xscrollcommand=self.tooltip_canvas.xview)
+        scrollbar = ttk.Scrollbar(frame, orient="horizontal", command=self.tooltip_canvas.xview)
+        scrollbar.pack(fill=tk.X)
+        self.tooltip_canvas.config(xscrollcommand=scrollbar.set)
+    
+    def update_scrollregion(self, event):
+        self.tooltip_canvas.configure(scrollregion=self.tooltip_canvas.bbox("all"))
+        
+    def on_select(self, event):
+        items = self.tree.selection()
+        if items:
+            tags = self.tree.item(items[0], "tags")
+            if tags:
+                self.tooltip_var.set(tags[0])
+        
+
+
 class perf_ctl(object):
     def __init__(self, GUI: "main.GUI"):
         """a popup window to edit preference for each line
@@ -21,6 +53,10 @@ class perf_ctl(object):
         Args:
             GUI (main.GUI): GUI object
         """
+        
+        # plugin
+        self.on_change_color_job=[]
+
         # private initialization
         self.init_private()
         
@@ -32,10 +68,6 @@ class perf_ctl(object):
         # structure initialization
         self.structure = self.GUI.curve_pref_frame
         self.specific = self.GUI.curve_pref_down
-        
-        # scrpll style
-        style = ttk.Style()
-        style.theme_use('classic')
 
         # Tree
         self.tree = ttk.Treeview(self.structure, selectmode='browse')
@@ -55,8 +87,14 @@ class perf_ctl(object):
                 for curve in list(self.container[file][type].keys()):
                     self.add_curve_to_file(file, type, curve)
         
+
+        # build tp
+        tp = Tooltip(self.tree, self.GUI.tip_frame)
         # Init action
-        self.tree.bind("<<TreeviewSelect>>", self.build_pref_options)
+        self.tree.bind("<<TreeviewSelect>>", lambda event: \
+            [self.build_pref_options(event), tp.on_select(event)])  
+        
+        self.tree.bind("<Control-r>", lambda event: self.on_renaming(event)) #Double-1
         self.tree.pack(side="left", fill="both", expand=True)
         self.treebar.pack(side="right", fill="y")
         self.tree.configure(xscrollcommand = self.treebar.set)
@@ -68,6 +106,8 @@ class perf_ctl(object):
         # build global preference widgets
         self.build_and_pack_global_widgets()
     
+    
+
     def add_type_to_tree(self, type: str):
         """add a type to a file in the tree
 
@@ -75,7 +115,7 @@ class perf_ctl(object):
             file (str): file name
             type (str): type name
         """
-        self.tree.insert("", "end", type, text=type)
+        self.tree.insert("", "end", type, text=type, tags=(f"{type}"))
     
     def add_file_to_type(self, file: str, type: str):
         """add a file to a type in the tree
@@ -84,7 +124,7 @@ class perf_ctl(object):
             file (str): file name
             type (str): type name
         """
-        self.tree.insert(type, "end", type+"@"+file, text=file)
+        self.tree.insert(type, "end", type+"@"+file, text=file, tags=(f"{file}"))
     
     def add_curve_to_file(self, file: str, type: str, curve: str):
         """add a curve to a file in the tree
@@ -94,23 +134,23 @@ class perf_ctl(object):
             type (str): type name
             curve (str): curve name
         """
-        self.tree.insert(type+"@"+file, "end", type+"@"+file+"@"+curve, text=curve)
+        self.tree.insert(type+"@"+file, "end", type+"@"+file+"@"+curve, text=curve, \
+            tags=(f"{curve}:{self.container[file][type][curve].tip}"))
     
     def init_private(self):
         self.pack_stat: bool = False
         self.pack_stat_high_level: bool = False
         self.selection_mode: bool = False
         
-        self.show_var = tkinter.IntVar()
-        self.color_var = tkinter.StringVar()
-        self.width_var = tkinter.DoubleVar()
-        self.marker_size_var = tkinter.DoubleVar()
-        self.show_grid_var = tkinter.IntVar()
-        self.show_axis_var = tkinter.IntVar()
-        self.show_label_var = tkinter.IntVar()
-        self.show_legend_var = tkinter.IntVar()
-        self.dark_mode_var = tkinter.IntVar()
-        self.indicate_var = tkinter.StringVar()
+        self.show_var = tk.IntVar()
+        self.color_var = tk.StringVar()
+        self.width_var = tk.DoubleVar()
+        self.marker_size_var = tk.DoubleVar()
+        self.show_grid_var = tk.IntVar()
+        self.show_axis_var = tk.IntVar()
+        self.show_label_var = tk.IntVar()
+        self.show_legend_var = tk.IntVar()
+        self.dark_mode_var = tk.IntVar()
         
         self.show_grid_var.set(1)
         self.show_axis_var.set(1)
@@ -121,19 +161,19 @@ class perf_ctl(object):
     ### GLOBAL PREFERENCE WIDGETS ###
     
     def build_and_pack_global_widgets(self):
-        self.glb_pref = tkinter.LabelFrame(self.GUI.global_pref_frame, text="Global preference", padx=5)
-        self.show_grid = tkinter.Checkbutton(self.glb_pref, text="Show grid", variable=self.show_grid_var, command=self.global_change_show_grid)
-        self.show_axis = tkinter.Checkbutton(self.glb_pref, text="Show axis", variable=self.show_axis_var, command=self.global_change_show_axis)
-        self.show_label = tkinter.Checkbutton(self.glb_pref, text="Show label", variable=self.show_label_var, command=self.global_change_show_label)
-        self.show_legend = tkinter.Checkbutton(self.glb_pref, text="Show legend", variable=self.show_legend_var, command=self.global_change_show_legend)
-        self.dark_mode = tkinter.Checkbutton(self.glb_pref, text="Dark mode", variable=self.dark_mode_var, command=self.global_change_dark_mode)
+        self.glb_pref = tk.LabelFrame(self.GUI.global_pref_frame, text="Global preference", padx=5)
+        self.show_grid = tk.Checkbutton(self.glb_pref, text="Show grid", variable=self.show_grid_var, command=self.global_change_show_grid)
+        self.show_axis = tk.Checkbutton(self.glb_pref, text="Show axis", variable=self.show_axis_var, command=self.global_change_show_axis)
+        self.show_label = tk.Checkbutton(self.glb_pref, text="Show label", variable=self.show_label_var, command=self.global_change_show_label)
+        self.show_legend = tk.Checkbutton(self.glb_pref, text="Show legend", variable=self.show_legend_var, command=self.global_change_show_legend)
+        self.dark_mode = tk.Checkbutton(self.glb_pref, text="Dark mode", variable=self.dark_mode_var, command=self.global_change_dark_mode)
         
-        self.glb_pref.pack(fill=tkinter.BOTH, expand=True, padx=10)
-        self.show_grid.grid(row=0, column=0, sticky=tkinter.W)
-        self.show_axis.grid(row=0, column=1, sticky=tkinter.W)
-        self.show_label.grid(row=0, column=2, sticky=tkinter.W)
-        self.show_legend.grid(row=1 ,column=0, sticky=tkinter.W)
-        self.dark_mode.grid(row=1, column=1, sticky=tkinter.W)
+        self.glb_pref.pack(fill=tk.BOTH, expand=True, padx=10)
+        self.show_grid.grid(row=0, column=0, sticky=tk.W)
+        self.show_axis.grid(row=0, column=1, sticky=tk.W)
+        self.show_label.grid(row=0, column=2, sticky=tk.W)
+        self.show_legend.grid(row=1 ,column=0, sticky=tk.W)
+        self.dark_mode.grid(row=1, column=1, sticky=tk.W)
     
     def global_change_show_grid(self):
         visibility = True if self.show_grid_var.get() == 1 else False
@@ -156,42 +196,42 @@ class perf_ctl(object):
         self.GUI.container._refresh_canvas()
     
     def global_change_dark_mode(self):
-        theme = "dark" if self.dark_mode_var.get() == 1 else "light"
+        theme = "DARK" if self.dark_mode_var.get() == 1 else "LIGHT"
         self.GUI.container.change_color_theme(theme)
         self.GUI.container._refresh_canvas()
     
     ### CURVE PREFERENCE WIDGETS ###
     
     def build_pref_widgets(self):
-        self.pref_frame = tkinter.LabelFrame(self.specific, text="Set preference for selected file", padx=7)
-        self.pref_show_line = tkinter.Checkbutton(self.pref_frame, text="Show on graph", variable=self.show_var, command=self.change_show)
-        self.sep1 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_color_preview = tkinter.Label(self.pref_frame, text="__")
-        self.pref_color = tkinter.Button(self.pref_frame, text="Change Color", command=self.change_color)
-        self.sep2 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_width_preview = tkinter.Canvas(self.pref_frame, width=50, height=10)
-        self.pref_width = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=1 ,command=self.change_width ,textvariable=self.width_var)
-        self.sep3 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_marker_txt = tkinter.Label(self.pref_frame, text="Marker")
+        self.pref_frame = tk.LabelFrame(self.specific, text="Set preference for selected file", padx=7)
+        self.pref_show_line = tk.Checkbutton(self.pref_frame, text="Show on graph", variable=self.show_var, command=self.change_show)
+        self.sep1 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_color_preview = tk.Label(self.pref_frame, text="__")
+        self.pref_color = tk.Button(self.pref_frame, text="Change Color", command=self.change_color)
+        self.sep2 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_width_preview = tk.Canvas(self.pref_frame, width=50, height=10)
+        self.pref_width = tk.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=1 ,command=self.change_width ,textvariable=self.width_var)
+        self.sep3 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_marker_txt = tk.Label(self.pref_frame, text="Marker")
         self.pref_marker = ttk.Combobox(self.pref_frame, values=list(markerlib.MARKERS.keys()), state="readonly")
         self.pref_marker.bind("<<ComboboxSelected>>", self.change_marker)
-        self.sep4 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_marker_size_txt = tkinter.Label(self.pref_frame, text="Marker Size")
-        self.pref_marker_size = tkinter.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=0.1 ,command=self.change_marker_size ,textvariable=self.marker_size_var)
-        self.sep5 = ttk.Separator(self.pref_frame, orient=tkinter.HORIZONTAL)
-        self.pref_marker_color_preview = tkinter.Label(self.pref_frame, text="__")
-        self.pref_marker_color = tkinter.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
+        self.sep4 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_marker_size_txt = tk.Label(self.pref_frame, text="Marker Size")
+        self.pref_marker_size = tk.Spinbox(self.pref_frame, from_=0 ,to=100 ,increment=1 ,command=self.change_marker_size ,textvariable=self.marker_size_var)
+        self.pref_marker_size.bind("<Return>", self.change_marker_size)
+        self.sep5 = ttk.Separator(self.pref_frame, orient=tk.HORIZONTAL)
+        self.pref_marker_color_preview = tk.Label(self.pref_frame, text="__")
+        self.pref_marker_color = tk.Button(self.pref_frame, text="Change Marker Color", command=self.change_marker_color)
     
     def build_high_level_widgets(self):
-        self.high_level_frame = tkinter.LabelFrame(self.specific, text="High level preference", padx=7)
-        self.indicate_entry = tkinter.Label(self.high_level_frame, textvariable=self.indicate_var)
-        self.high_level_show_line = tkinter.Button(self.high_level_frame, text="Show", command=self.change_show_all)
-        self.high_level_hide_line = tkinter.Button(self.high_level_frame, text="Hide", command=self.change_hide_all)
+        self.high_level_frame = tk.LabelFrame(self.specific, text="High level preference", padx=7)
+        self.high_level_show_line = tk.Button(self.high_level_frame, text="Show", command=self.change_show_all)
+        self.high_level_hide_line = tk.Button(self.high_level_frame, text="Hide", command=self.change_hide_all)
     
     def pack_all(self):
         """pack all widgets
         """
-        self.pref_frame.pack(expand=True, fill=tkinter.BOTH, padx=10)
+        self.pref_frame.pack(expand=True, fill=tk.BOTH, padx=10)
         self.pref_show_line.grid(row=0, column=0, columnspan=2)
         self.sep1.grid(row=1, column=0, columnspan=2, sticky="ew", pady=5)
         self.pref_color_preview.grid(row=2, column=0, sticky="ew")
@@ -214,10 +254,9 @@ class perf_ctl(object):
     def pack_all_high_level(self):
         """pack all high level widgets
         """
-        self.high_level_frame.pack(expand=True, fill=tkinter.BOTH, padx=10)
-        self.indicate_entry.grid(row=0, column=0, sticky="ew", columnspan=2, pady=5)
-        self.high_level_show_line.grid(row=1, column=0, sticky="ew")
-        self.high_level_hide_line.grid(row=1, column=1, sticky="ew")
+        self.high_level_frame.pack(expand=True, fill=tk.BOTH, padx=10)
+        self.high_level_show_line.pack(fill=tk.X)
+        self.high_level_hide_line.pack(fill=tk.X)
         # refresh frame
         self.high_level_frame.update()
     
@@ -246,18 +285,17 @@ class perf_ctl(object):
         """unpack all high level widgets
         """
         self.high_level_frame.pack_forget()
-        self.indicate_entry.grid_forget()
-        self.high_level_show_line.grid_forget()
-        self.high_level_hide_line.grid_forget()
+        self.high_level_show_line.pack_forget()
+        self.high_level_hide_line.pack_forget()
     
-    def build_pref_options(self, event: tkinter.Event):
+    def build_pref_options(self, event: tk.Event):
         """this is a callback function for the combobox
         after a selection is made, this function will be called
         if there is any previous options widgets packed, it will be cleared
         pack new options widgets according to the selection file path
 
         Args:
-            event (event): a must have argument for tkinter callback function
+            event (event): a must have argument for tk callback function
         """
         # check current status
         self.target_path: ttk.Treeview = event.widget
@@ -282,20 +320,6 @@ class perf_ctl(object):
                     self.GUI.container.container[self.f][self.t][self.c].line2d_object[0].set_visible(True)
             
             else:
-                
-                if len(self.target_path.focus().split("@")) == 2:
-                    self.t = self.target_path.focus().split("@")[0]
-                    self.f = self.target_path.focus().split("@")[1]
-                    self.indicate_var.set(f"File: {self.f}\nType: {self.t}")
-                elif len(self.target_path.focus().split("@")) == 1:
-                    self.t = self.target_path.focus().split("@")[0]
-                    self.f = None
-                    self.indicate_var.set(f"File: ALL\nType: {self.t}")
-                else:
-                    self.t = None
-                    self.f = None
-                    self.indicate_var.set(f"NULL")
-                    
                 self.pack_all_high_level()
                 self.pack_stat_high_level = True
         
@@ -370,6 +394,8 @@ class perf_ctl(object):
             curve=self.c,
             kwargs=kwargs,
         )
+        for job in self.on_change_color_job:
+            job()
     
     def change_width(self):
         """record change in width variable
@@ -384,7 +410,7 @@ class perf_ctl(object):
             kwargs=kwargs,
         )
     
-    def change_marker_size(self):
+    def change_marker_size(self, bind_action=None):
         """record change in marker size variable
         """
         kwargs = {"markersize": self.marker_size_var.get()}
@@ -512,3 +538,47 @@ class perf_ctl(object):
                 for curve in list(self.container[file][type].keys()):
                     self.add_curve_to_file(file, type, curve)
         
+    def on_renaming(self, event):
+        print("test::pref_ctrl:: on_renaming!")
+        curve = self.tree.selection()[0]
+        file = self.tree.parent(curve)
+        type = self.tree.parent(file)
+        curve_name = self.tree.item(curve, 'text')
+        file_name = self.tree.item(file, 'text')
+        type_name = self.tree.item(type, 'text')
+        new_name = None
+        new_name = simpledialog.askstring("Rename", "Enter new name:", initialvalue=curve_name)
+        if new_name != None:
+            self.tree.item(curve, text=new_name)
+            self.container[file_name][type_name][new_name] = \
+                self.container[file_name][type_name][curve_name]
+            del self.container[file_name][type_name][curve_name]
+            self.container[file_name][type_name][new_name].parameters["label"] = \
+                f"{file_name}@{type_name}@{new_name}"
+            self.container[file_name][type_name][new_name].line2d_object[0].\
+                update(dict(label=f"{file_name}@{type_name}@{new_name}"))
+                
+            for f in self.container:
+                for t in self.container[f]:
+                    for c in self.container[f][t]:
+                        # ptr = c.tip.find(f"{file_name}/{type_name}/{curve_name}")
+                        # if ptr != -1:
+                        #     if
+                        if f"{file_name}/{type_name}/{curve_name}" in self.container[f][t][c].tip:
+                            print(self.container[f][t][c].tip)
+                            self.container[f][t][c].tip = self.container[f][t][c].tip.replace( \
+                                f"{file_name}/{type_name}/{curve_name}", \
+                                f"{file_name}/{type_name}/{new_name}")
+                            print(self.container[f][t][c].tip)
+                        
+                
+                
+            self.refresh()
+            self.GUI.container._refresh_canvas()
+            self._set_GUI_saved_false()
+            # print("Not None")
+            
+    def _set_GUI_saved_false(self):
+        self.GUI.root.title('Data Visualization Software (unsaved)')
+        self.GUI.saved = False
+        return None

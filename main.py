@@ -2,7 +2,8 @@
 import tkinter
 import tkinter.ttk
 import tkinter.messagebox
-import os
+import ctypes
+import sys
 
 # files
 from helper.logger import logger
@@ -18,6 +19,8 @@ from bin import preference_control
 from bin import set
 from bin import operation
 from bin import selector
+from bin import states
+from plugins import *
 from pathlib import Path
 import custom
 def do_nothing():
@@ -28,13 +31,8 @@ class GUI:
         # ATTR
         self.root = root
         
-        # GLB SETTINGS
-        # WARNING: optimise involves with a simplification subsampling of data
-        self.optimize = False
-        self.debug_mode = True
-        
-        if self.debug_mode:
-            os.system('cls' if os.name=='nt' else 'clear')
+        # Load setting
+        self.setting = set.setting()
         
         # init menu
         self.menu_obj: dict[str, object] = {}
@@ -53,16 +51,32 @@ class GUI:
         self._window()
         
         # load all modules
-        self.setting = set.setting()
-        self.log = logger()
+        # Warning: the order of the following lines matters
+        self.log = logger(self)
         self.menu_bar = tkinter.Menu(root)
         self.operation = operation.operations()
         self.container = data_plot_new.line_container(gui=self)
         self.pref = preference_control.perf_ctl(self)
         self.lasso = selector.lasso(self)
         self.usr_cus = custom.labCustom()
-        self.db_path = None # database path if .db file is loaded.
+
+        # style
+        self._stylesheet()
+        
+        # plugin router
+        self.on_draw = states.on_draw(self)
+        self.on_change_color = states.on_change_color(self)
+        self.all_plugins = []
+        for i in sys.modules.keys():
+            if i.startswith("plugins."):
+                for name, obj in sys.modules[i].__dict__.items():
+                    if name.startswith("p_"):
+                        self.all_plugins.append(obj(self))
+        
+        # database
+        self.txt_path = None # text datafile path if .txt file is loaded.
         #self.save_state = False # indicates whether the current graph is saved.
+        
         # menu bar
         self._menu_bar_main()
         root.config(menu=self.menu_bar)
@@ -73,7 +87,7 @@ class GUI:
         # save quit process
         root.protocol("WM_DELETE_WINDOW", self._quit_process)
         root.mainloop()
-        self.log._close()
+        self.log.close()
     
     def _init_frames(self):
         """left and right frame initialization
@@ -83,20 +97,51 @@ class GUI:
         self.graph_frame = tkinter.Frame(self.root)
         self.graph_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.LEFT)
         self.line_frame = tkinter.Frame(self.graph_frame)
-        self.right_frame = tkinter.Frame(self.root)
+        
+
+        
+        self.right_frame = tkinter.Frame(self.root, bg="white")
         self.right_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.RIGHT)
-        self.curve_pref_frame = tkinter.Frame(self.right_frame)
+        
+        self.curve_pref_frame = tkinter.Frame(self.right_frame, bg="white")
         self.curve_pref_frame.pack(fill=tkinter.BOTH, expand=1, side=tkinter.TOP)
-        self.curve_pref_down = tkinter.Frame(self.right_frame)
+        self.curve_pref_down = tkinter.Frame(self.right_frame, bg="white")
         self.curve_pref_down.pack(fill=tkinter.BOTH, expand=1, side=tkinter.TOP)
-        self.global_pref_frame = tkinter.Frame(self.right_frame)
+        self.tip_frame = tkinter.Frame(self.right_frame, bg="white")
+        self.tip_frame.pack(fill=tkinter.BOTH, expand=0, side=tkinter.TOP)
+        self.global_pref_frame = tkinter.Frame(self.right_frame, bg="white")
         self.global_pref_frame.pack(fill=tkinter.X, side=tkinter.BOTTOM)
         
     def _window(self):
         """set title and window size
         """
-        self.root.title('Data Visualization Software')
-        self.root.geometry("1125x800")
+        if sys.platform == 'win32':
+            appId = self.setting.APP_ID
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0)
+            self.root.tk.call('tk', 'scaling', ScaleFactor/75)
+            width = self.setting.WIN_GUI_WIDTH * ScaleFactor/self.setting.WIN_SCALE_DIVIDER
+            height = self.setting.WIN_GUI_HEIGHT * ScaleFactor/self.setting.WIN_SCALE_DIVIDER
+            self.root.geometry(str(int(width)) + 'x' + str(int(height)))
+        else:
+            self.root.tk.call('tk', 'scaling', 1.2)
+            self.root.geometry(str(self.setting.UNX_GUI_WIDTH) + 'x' + str(self.setting.UNX_GUI_HEIGHT))
+        self.root.iconbitmap(self.setting.FAVICON)
+        self.root.title(self.setting.NAME)
+        
+    def _stylesheet(self):
+        """set style
+        """
+        style = tkinter.ttk.Style(self.root)
+        style.theme_use(self.setting.THEME_USE)
+        style.configure(
+            "red.Horizontal.TProgressbar",
+            foreground=self.setting.PROGRESS_BAR_COLOR_FG,
+            background=self.setting.PROGRESS_BAR_COLOR_BG
+        )
+        if sys.platform == 'win32':
+            style.configure('Treeview', rowheight=self.setting.TREEVIEW_ROW_HEIGHT)
     
     def _menu_bar_main(self):
         """initializations of each tool bar selection
@@ -140,7 +185,7 @@ class GUI:
         if self.saved == True:
             self.root.destroy()
             return None
-        if self.db_path == None:
+        if self.txt_path == None:
             question = "Want to save your changes?"
             choice = tkinter.messagebox.askyesnocancel("Quit", question)
             if choice == True:
@@ -151,7 +196,7 @@ class GUI:
             else:
                 pass
         else:
-            file_name = Path(self.db_path).name
+            file_name = Path(self.txt_path).name
             question = f"Want to save your changes to '{file_name}'?"
             choice = tkinter.messagebox.askyesnocancel("Quit", question)
             if choice == True:

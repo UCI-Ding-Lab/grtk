@@ -31,47 +31,18 @@ class TestMenu():
         print(i.CURVE)
 
     def _temp(self):
-        # print(self.GUI.container.container)
-        # for k, v in self.GUI.container.container.items():
-        #     print(k)
-        # print("++++++++++++++++")
-        # for k, v in self.GUI.container.container.items():
-        #     print(v)
-        # print(self.GUI.container.container['303.gr']['system']['graph 6'])
-        
-        
-        # for i, j in self.GUI.container.container.items():
-        #     for r in self.GUI.container.container[i][self.GUI.container.container[i]].items():
-        #         print(r)
-        
-        # temp = []
-        # for i in self.GUI.container.container.keys():
-        #     for j in self.GUI.container.container[i].keys():
-        #         for r in self.GUI.container.container[i][j].keys():
-        #             print(self.GUI.container.container[i][j][r].line2d_object[0].get_marker())
-        # print(self.GUI.container.get_curves_list())
+
         
         """
         for i in self.GUI.container.get_curves_list():
             print(len(list(zip(i[-1][0], i[-1][1]))))
         """
-        # temp = DBManager(self.GUI)
-        # # temp.load(self.GUI.container, r"Data/Untitled.db")
-        
-        # arr = np.array(temp.fetch_coords(r"Data/Untitled.db", \
-        #     r'C:/Work/Ding Lab/GitRepo/grtk/(Multi-layer)FRD/303.gr', \
-        #     'system', 'graph 1'))
-        # print(arr[:,0].shape)
-        
+
         for i in self.GUI.container.get_curves_list():
             print(i)
-        
-        #             temp.append([i, j, r, \
-        #                 self.GUI.container.container[i][j][r].plt_cords])
-        # print(temp)
-                    # print(i, j, r)
-                    # print(self.GUI.container.container[i][j][r].plt_cords)
-                    # return None
+        # print(self.GUI.container.get_curves_list()[0][11])
+        # print(len(self.GUI.container.get_curves_list()[0][11]))
+
         return None
 
     def _clear_recent_file(self):

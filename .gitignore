@@ -1,2 +1,12 @@
-
 (Multi-layer)FRD/real_data.db
+(Multi-layer)FRD/real.txt
+(Multi-layer)FRD/Untitled.txt
+bin/__pycache__/
+data/
+helper/__pycache__/
+menus/__pycache__/
+plugins/__pycache__/
+__pycache__/
+*.DS_Store
+*.pyc
+(Multi-layer)FRD/all.txt

@@ -32,7 +32,8 @@ class operations:
         messagebox.showinfo(title="Operation Successful!", message=message, parent=window)
         return None
     
-    def _get_result_curve(self, file, curve, type, cords_x, cords_y, file_path):
+    def _get_result_curve(self, file, curve, type, cords_x, cords_y, file_path, \
+        tip):
         result_curve: load.single_line = load.single_line(
             file=file,
             curve=curve,
@@ -40,6 +41,7 @@ class operations:
             cords=np.array([cords_x, cords_y]),
             file_path=file_path
         )
+        result_curve.tip = tip
         return result_curve
     
     def _perform_subtraction(self, window, gui, listbox1, listbox2):
@@ -81,12 +83,15 @@ class operations:
             #     cords=np.array([cords_x, cords_y]),
             #     file_path=operations.FILE
             # )
+            tip = f"{file_name}/{type_name}/{nick_name}" + subtrahend_message
+            # temp_tip = "awoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjoawoefjioawefjoiawfioawoefijawefioawefjo"
+            # temp_tip = f"{file_name}/{type_name}/{nick_name}-{operations.FILE}/{operations.TYPE}/{str(operations.CURVE)}"
             result_curve = self._get_result_curve(operations.FILE, \
-                str(operations.CURVE), operations.TYPE, cords_x, cords_y, operations.FILE)
+                str(operations.CURVE), operations.TYPE, cords_x, cords_y, operations.FILE, tip.replace(" ", ""))
             gui.container.load_and_plot_obj(target=result_curve)
             operations.CURVE += 1
-            message = message + f"{file_name}/{type_name}/{nick_name}" + subtrahend_message + \
-                f" = {operations.FILE}/{operations.TYPE}/{str(operations.CURVE)}\n\n"
+
+            message = message + tip + f" = {operations.FILE}/{operations.TYPE}/{str(operations.CURVE)}\n\n"
 
         self._refresh_listbox(gui, listbox1)
         self._refresh_listbox(gui, listbox2)
@@ -169,7 +174,7 @@ class operations:
         cords_x = None
         
         message = "Below operations are performed:\n\n"
-        
+        tip = ""
         if selected_curves == []:
             return None
         
@@ -186,11 +191,13 @@ class operations:
                 
             if message == "Below operations are performed:\n\n":
                 message = message + f"{file_name}/{type_name}/{nick_name}"
+                tip = tip + f"{file_name}/{type_name}/{nick_name}"
             else:
                 message = message + f" + {file_name}/{type_name}/{nick_name}"
+                tip = tip + f" + {file_name}/{type_name}/{nick_name}"
             
         result_curve = self._get_result_curve(operations.FILE, \
-            str(operations.CURVE), operations.TYPE, cords_x, cords_y, operations.FILE)
+            str(operations.CURVE), operations.TYPE, cords_x, cords_y, operations.FILE, tip.replace(" ", ""))
         gui.container.load_and_plot_obj(target=result_curve)
         operations.CURVE += 1
         
@@ -252,7 +259,7 @@ class operations:
         cords_x = None
         
         message = "Below operations are performed:\n\n"
-        
+        tip = ""
         if selected_curves == []:
             return None
         
@@ -268,12 +275,15 @@ class operations:
                     container[file_name][type_name][nick_name].abs_cords_y)
             if message == "Below operations are performed:\n\n":
                 message = message + f"({file_name}/{type_name}/{nick_name}"
+                tip = tip + f"({file_name}/{type_name}/{nick_name}"
             else:
                 message = message + f" + {file_name}/{type_name}/{nick_name}"
+                tip = tip + f" + {file_name}/{type_name}/{nick_name}"
                 
         cords_y = cords_y / len(selected_curves)
+        tip = tip + f")/{len(selected_curves)}"
         result_curve = self._get_result_curve(operations.FILE, \
-            str(operations.CURVE), operations.TYPE, cords_x, cords_y, operations.FILE)
+            str(operations.CURVE), operations.TYPE, cords_x, cords_y, operations.FILE, tip.replace(" ", ""))
         gui.container.load_and_plot_obj(target=result_curve)
         operations.CURVE += 1
         
@@ -360,9 +370,9 @@ class operations:
     def menu_perform(self, gui: "main.GUI", action: str):
 
         obj = None
-        if action == "+":
+        if action == "ADD":
             self.opt_addition(gui)
-        elif action == "-":
+        elif action == "SUB":
             self.opt_subtraction(gui) #, selected_curves
         elif action == "AVG":
             self.opt_averaging(gui)

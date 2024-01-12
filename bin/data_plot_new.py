@@ -37,25 +37,24 @@ class line_container(object):
         self.container = defaultdict(lambda: defaultdict(dict[str, load.single_line]))
              
         # default style
-        self.legend_style = dict(
-            loc='upper center',
-            bbox_to_anchor=(0.5, 1.1),
-            facecolor="black",
-            ncol=3,
-            edgecolor="black",
-            labelcolor="white"
-        )
+        self.legend_style = self.gui.setting.LEGEND_STYLE
         
         # init figure
         self._figure_initialization()
     
     def _figure_initialization(self) -> None:
         if sys.platform == "win32":
-            self.matplot_figure: Figure = Figure(figsize = (4, 4), dpi = 100)
+            self.matplot_figure: Figure = Figure(
+                figsize=(self.gui.setting.WIN_FIGURE_WIDTH,self.gui.setting.WIN_FIGURE_HEIGHT),
+                dpi=self.gui.setting.WIN_FIGURE_DPI
+            )
         else:
-            self.matplot_figure: Figure = Figure(figsize = (8, 5), dpi = 100)
+            self.matplot_figure: Figure = Figure(
+                figsize=(self.gui.setting.UNX_FIGURE_WIDTH,self.gui.setting.UNX_FIGURE_HEIGHT),
+                dpi=self.gui.setting.UNX_FIGURE_DPI
+            )
         self.matplot_subplot: Axes = self.matplot_figure.add_subplot(1,1,1) # type: ignore
-        self.change_color_theme(theme="dark")
+        self.change_color_theme(theme="DARK")
         self.matplot_subplot.grid(color="grey", visible=True)
         self.tk_canvas = FigureCanvasTkAgg(self.matplot_figure, master=self.frame)
         self.tk_toolbar = NavigationToolbar2Tk(self.tk_canvas, self.frame)
@@ -177,28 +176,16 @@ class line_container(object):
                 self.matplot_subplot.legend().remove()
     
     def change_color_theme(self, theme: str) -> None:
-        if theme == "light":
-            FACE_COLOR = "white"
-            EDGE_COLOR = "white"
-            TICK_COLOR = "black"
-            LABEL_COLOR = "black"
-            SPINE_COLOR = "black"
-        else:
-            FACE_COLOR = "black"
-            EDGE_COLOR = "black"
-            TICK_COLOR = "white"
-            LABEL_COLOR = "white"
-            SPINE_COLOR = "white"
-        self.matplot_figure.set_facecolor(EDGE_COLOR)
-        self.matplot_subplot.set_facecolor(FACE_COLOR)
-        self.matplot_subplot.tick_params(axis="x", colors=TICK_COLOR)
-        self.matplot_subplot.tick_params(axis="y", colors=TICK_COLOR)
-        self.matplot_subplot.set_xlabel("Time", color=LABEL_COLOR)
-        self.matplot_subplot.set_ylabel("Position", color=LABEL_COLOR)
-        self.matplot_subplot.spines["bottom"].set_color(SPINE_COLOR)
-        self.matplot_subplot.spines["top"].set_color(SPINE_COLOR)
-        self.matplot_subplot.spines["left"].set_color(SPINE_COLOR)
-        self.matplot_subplot.spines["right"].set_color(SPINE_COLOR)
+        self.matplot_figure.set_facecolor(self.gui.setting.GRAPH_THEME[theme]["EDGE_COLOR"])
+        self.matplot_subplot.set_facecolor(self.gui.setting.GRAPH_THEME[theme]["FACE_COLOR"])
+        self.matplot_subplot.tick_params(axis="x", colors=self.gui.setting.GRAPH_THEME[theme]["TICK_COLOR"])
+        self.matplot_subplot.tick_params(axis="y", colors=self.gui.setting.GRAPH_THEME[theme]["TICK_COLOR"])
+        self.matplot_subplot.set_xlabel("Time", color=self.gui.setting.GRAPH_THEME[theme]["LABEL_COLOR"])
+        self.matplot_subplot.set_ylabel("Position", color=self.gui.setting.GRAPH_THEME[theme]["LABEL_COLOR"])
+        self.matplot_subplot.spines["bottom"].set_color(self.gui.setting.GRAPH_THEME[theme]["SPINE_COLOR"])
+        self.matplot_subplot.spines["top"].set_color(self.gui.setting.GRAPH_THEME[theme]["SPINE_COLOR"])
+        self.matplot_subplot.spines["left"].set_color(self.gui.setting.GRAPH_THEME[theme]["SPINE_COLOR"])
+        self.matplot_subplot.spines["right"].set_color(self.gui.setting.GRAPH_THEME[theme]["SPINE_COLOR"])
     
     def change_grid(self, show: bool) -> None:
         if show:

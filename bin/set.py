@@ -6,12 +6,41 @@ if TYPE_CHECKING:
     import main
 
 class setting(object):
+    # Data settings
     SPERATOR = "----------"
+    
+    # Program settings
+    DEBUG_MODE = True
+    DEBUG_PRINT = True
+    OPTIMIZE = False
+    BUFFER_SIZE_KB = -1
+    
+    # Style settings
+    THEME_USE = "clam"
+    TREEVIEW_ROW_HEIGHT = 40
+    PROGRESS_BAR_COLOR_FG = "green"
+    PROGRESS_BAR_COLOR_BG = "green"
+    
+    # Graph settings
     TYPES = {
-        "system": dict(linewidth=0.5,color="yellow"),
-        "background": dict(linewidth=0.5,color="green"),
-        "data": dict(linewidth=0.0,color="red",marker=".",markersize=2.8),
-        "default": dict(linewidth=0.5,color="white"),
+        "system": dict(
+            linewidth=0.5,
+            color="yellow"
+        ),
+        "background": dict(
+            linewidth=0.5,
+            color="green"
+        ),
+        "data": dict(
+            linewidth=0.0,
+            color="red",
+            marker=".",
+            markersize=2.8
+        ),
+        "default": dict(
+            linewidth=0.5,
+            color="white"
+        ),
     }
     ANNOTATION_KWARG = dict(
         bbox=dict(
@@ -35,12 +64,45 @@ class setting(object):
         facecolor="white",
         edgecolor="white",
     )
-    PROGRESS_BAR_COLOR_FG = "green"
-    PROGRESS_BAR_COLOR_BG = "green"
-    DEBUG_MODE = True
-    DEBUG_PRINT = True
-    OPTIMIZE = False
-    BUFFER_SIZE_KB = -1
+    LEGEND_STYLE = dict(
+        loc='upper center',
+        bbox_to_anchor=(0.5, 1.1),
+        facecolor="black",
+        ncol=3,
+        edgecolor="black",
+        labelcolor="white"
+    )
+    GRAPH_THEME = dict(
+        DARK=dict(
+            FACE_COLOR="black",
+            EDGE_COLOR="black",
+            TICK_COLOR="white",
+            LABEL_COLOR="white",
+            SPINE_COLOR="white",
+        ),
+        LIGHT=dict(
+            FACE_COLOR="white",
+            EDGE_COLOR="white",
+            TICK_COLOR="black",
+            LABEL_COLOR="black",
+            SPINE_COLOR="black",
+        )
+    )
+    WIN_FIGURE_WIDTH = 4
+    WIN_FIGURE_HEIGHT = 4
+    WIN_FIGURE_DPI = 100
+    UNX_FIGURE_WIDTH = 8
+    UNX_FIGURE_HEIGHT = 5
+    UNX_FIGURE_DPI = 100
+    
+    
+    # GUI settings
+    NAME = "GRTK: Data Visualization Software"
+    WIN_GUI_WIDTH = 1200
+    WIN_GUI_HEIGHT = 800
+    WIN_SCALE_DIVIDER = 90
+    UNX_GUI_WIDTH = 1125
+    UNX_GUI_HEIGHT = 800
 
     def __init__(self):
         pass

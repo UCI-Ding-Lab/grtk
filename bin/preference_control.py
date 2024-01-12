@@ -151,7 +151,6 @@ class perf_ctl(object):
         self.show_label_var = tk.IntVar()
         self.show_legend_var = tk.IntVar()
         self.dark_mode_var = tk.IntVar()
-        self.indicate_var = tk.StringVar()
         
         self.show_grid_var.set(1)
         self.show_axis_var.set(1)
@@ -197,7 +196,7 @@ class perf_ctl(object):
         self.GUI.container._refresh_canvas()
     
     def global_change_dark_mode(self):
-        theme = "dark" if self.dark_mode_var.get() == 1 else "light"
+        theme = "DARK" if self.dark_mode_var.get() == 1 else "LIGHT"
         self.GUI.container.change_color_theme(theme)
         self.GUI.container._refresh_canvas()
     
@@ -226,7 +225,6 @@ class perf_ctl(object):
     
     def build_high_level_widgets(self):
         self.high_level_frame = tk.LabelFrame(self.specific, text="High level preference", padx=7)
-        self.indicate_entry = tk.Label(self.high_level_frame, textvariable=self.indicate_var)
         self.high_level_show_line = tk.Button(self.high_level_frame, text="Show", command=self.change_show_all)
         self.high_level_hide_line = tk.Button(self.high_level_frame, text="Hide", command=self.change_hide_all)
     
@@ -256,10 +254,9 @@ class perf_ctl(object):
     def pack_all_high_level(self):
         """pack all high level widgets
         """
-        self.high_level_frame.pack(expand=True, fill=tk.BOTH, padx=10)
-        self.indicate_entry.grid(row=0, column=0, sticky="ew", columnspan=2, pady=5)
-        self.high_level_show_line.grid(row=1, column=0, sticky="ew")
-        self.high_level_hide_line.grid(row=1, column=1, sticky="ew")
+        self.high_level_frame.pack(expand=True, fill=tk.X, padx=10)
+        self.high_level_show_line.pack(expand=True, fill=tk.X)
+        self.high_level_hide_line.pack(expand=True, fill=tk.X)
         # refresh frame
         self.high_level_frame.update()
     
@@ -288,9 +285,8 @@ class perf_ctl(object):
         """unpack all high level widgets
         """
         self.high_level_frame.pack_forget()
-        self.indicate_entry.grid_forget()
-        self.high_level_show_line.grid_forget()
-        self.high_level_hide_line.grid_forget()
+        self.high_level_show_line.pack_forget()
+        self.high_level_hide_line.pack_forget()
     
     def build_pref_options(self, event: tk.Event):
         """this is a callback function for the combobox
@@ -324,20 +320,6 @@ class perf_ctl(object):
                     self.GUI.container.container[self.f][self.t][self.c].line2d_object[0].set_visible(True)
             
             else:
-                
-                if len(self.target_path.focus().split("@")) == 2:
-                    self.t = self.target_path.focus().split("@")[0]
-                    self.f = self.target_path.focus().split("@")[1]
-                    self.indicate_var.set(f"File: {self.f}\nType: {self.t}")
-                elif len(self.target_path.focus().split("@")) == 1:
-                    self.t = self.target_path.focus().split("@")[0]
-                    self.f = None
-                    self.indicate_var.set(f"File: ALL\nType: {self.t}")
-                else:
-                    self.t = None
-                    self.f = None
-                    self.indicate_var.set(f"NULL")
-                    
                 self.pack_all_high_level()
                 self.pack_stat_high_level = True
         

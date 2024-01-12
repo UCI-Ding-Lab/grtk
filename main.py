@@ -31,9 +31,8 @@ class GUI:
         # ATTR
         self.root = root
         
-        # GLB SETTINGS
-        # WARNING: optimise involves with a simplification subsampling of data
-        self.optimize = False
+        # Load setting
+        self.setting = set.setting()
         
         # init menu
         self.menu_obj: dict[str, object] = {}
@@ -53,7 +52,6 @@ class GUI:
         
         # load all modules
         # Warning: the order of the following lines matters
-        self.setting = set.setting()
         self.log = logger(self)
         self.menu_bar = tkinter.Menu(root)
         self.operation = operation.operations()
@@ -121,26 +119,27 @@ class GUI:
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
             ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0)
             self.root.tk.call('tk', 'scaling', ScaleFactor/75)
-            self.root.title('GRTK: Data Visualization Software')
-            width = 1200 * ScaleFactor/90
-            height = 800 * ScaleFactor/90
+            self.root.title(self.setting.NAME)
+            width = self.setting.WIN_GUI_WIDTH * ScaleFactor/self.setting.WIN_SCALE_DIVIDER
+            height = self.setting.WIN_GUI_HEIGHT * ScaleFactor/self.setting.WIN_SCALE_DIVIDER
             self.root.geometry(str(int(width)) + 'x' + str(int(height)))
         else:
-            self.root.title('GRTK: Data Visualization Software')
-            self.root.geometry('1125x800')
+            self.root.tk.call('tk', 'scaling', 1.2)
+            self.root.title(self.setting.NAME)
+            self.root.geometry(str(self.setting.UNX_GUI_WIDTH) + 'x' + str(self.setting.UNX_GUI_HEIGHT))
     
     def _stylesheet(self):
         """set style
         """
         style = tkinter.ttk.Style(self.root)
-        style.theme_use('clam')
+        style.theme_use(self.setting.THEME_USE)
         style.configure(
             "red.Horizontal.TProgressbar",
             foreground=self.setting.PROGRESS_BAR_COLOR_FG,
             background=self.setting.PROGRESS_BAR_COLOR_BG
         )
         if sys.platform == 'win32':
-            style.configure('Treeview', rowheight=40)
+            style.configure('Treeview', rowheight=self.setting.TREEVIEW_ROW_HEIGHT)
     
     def _menu_bar_main(self):
         """initializations of each tool bar selection

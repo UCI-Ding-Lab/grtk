@@ -1,46 +1,35 @@
 import tkinter
 from tkinter import scrolledtext
+
 # typecheck
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     import main
+
 
 class setting(object):
     # Data settings
     SPERATOR = "----------"
-    
+
     # Program settings
     DEBUG_MODE = True
     DEBUG_PRINT = True
     OPTIMIZE = False
     BUFFER_SIZE_KB = -1
-    
+
     # Style settings
     THEME_USE = "clam"
     TREEVIEW_ROW_HEIGHT = 40
     PROGRESS_BAR_COLOR_FG = "green"
     PROGRESS_BAR_COLOR_BG = "green"
-    
+
     # Graph settings
     TYPES = {
-        "system": dict(
-            linewidth=0.5,
-            color="yellow"
-        ),
-        "background": dict(
-            linewidth=0.5,
-            color="green"
-        ),
-        "data": dict(
-            linewidth=0.0,
-            color="red",
-            marker=".",
-            markersize=2.8
-        ),
-        "default": dict(
-            linewidth=0.5,
-            color="white"
-        ),
+        "system": dict(linewidth=0.5, color="yellow"),
+        "background": dict(linewidth=0.5, color="green"),
+        "data": dict(linewidth=0.0, color="red", marker=".", markersize=2.8),
+        "default": dict(linewidth=0.5, color="white"),
     }
     ANNOTATION_KWARG = dict(
         bbox=dict(
@@ -65,12 +54,12 @@ class setting(object):
         edgecolor="white",
     )
     LEGEND_STYLE = dict(
-        loc='upper center',
+        loc="upper center",
         bbox_to_anchor=(0.5, 1.1),
         facecolor="black",
         ncol=3,
         edgecolor="black",
-        labelcolor="white"
+        labelcolor="white",
     )
     GRAPH_THEME = dict(
         DARK=dict(
@@ -86,7 +75,7 @@ class setting(object):
             TICK_COLOR="black",
             LABEL_COLOR="black",
             SPINE_COLOR="black",
-        )
+        ),
     )
     WIN_FIGURE_WIDTH = 4
     WIN_FIGURE_HEIGHT = 4
@@ -94,8 +83,9 @@ class setting(object):
     UNX_FIGURE_WIDTH = 8
     UNX_FIGURE_HEIGHT = 5
     UNX_FIGURE_DPI = 100
-    
-    
+    ZOOM_FACTOR = 0.5
+    BASE_SCALE = 2
+
     # GUI settings
     NAME = "GRTK: Data Visualization Software"
     FAVICON = "favicon.ico"
@@ -108,7 +98,7 @@ class setting(object):
 
     def __init__(self):
         pass
-    
+
     def change_setting(self, base: "main.GUI"):
         self.setting_window = tkinter.Toplevel(base.root)
         self.setting_window.title("Setting")
@@ -123,14 +113,12 @@ class setting(object):
         self.types_define = scrolledtext.ScrolledText(self.lf_types)
         self.types_define.insert(tkinter.INSERT, str(self.TYPES))
         self.types_define.pack(fill="both", expand=1)
-        self.save_button = tkinter.Button(self.setting_window, text="Save", command=self.save_setting)
+        self.save_button = tkinter.Button(
+            self.setting_window, text="Save", command=self.save_setting
+        )
         self.save_button.pack(fill="both", expand=1)
-    
+
     def save_setting(self):
         setting.SPERATOR = self.seperator_setting.get()
         setting.TYPES = eval(self.types_define.get("1.0", tkinter.END))
         self.setting_window.destroy()
-        
-        
-        
-        

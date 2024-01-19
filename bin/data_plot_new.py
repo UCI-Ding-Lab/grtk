@@ -2,6 +2,7 @@
 import colorsys
 import tkinter
 from tkinter import ttk
+import matplotlib.backend_bases
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # type: ignore
@@ -60,6 +61,8 @@ class line_container(object):
         self.tk_toolbar = NavigationToolbar2Tk(self.tk_canvas, self.frame)
         self.tk_canvas._tkcanvas.pack(fill=tkinter.BOTH, expand=1) # type: ignore
         self.tk_toolbar.update()
+        self.scroll = self.zoom_factory()
+        self.tk_canvas.mpl_connect('scroll_event', self.scroll)
         self.frame.pack(fill=tkinter.BOTH, expand=1)
     
     def load_and_plot(self, path: str) -> None:
@@ -237,6 +240,25 @@ class line_container(object):
             xmin=self.matplot_subplot.get_xlim()[0]+xrange/4, \
             xmax=self.matplot_subplot.get_xlim()[1]-xrange/4)
         self.tk_canvas.draw()
+    
+    def zoom_factory(self):
+        ax = self.matplot_subplot
+        base_scale = self.gui.setting.BASE_SCALE
+        def zoom_fun(event: matplotlib.backend_bases.MouseEvent):
+            cur_xlim = ax.get_xlim()
+            cur_ylim = ax.get_ylim()
+            cur_xrange = (cur_xlim[1] - cur_xlim[0]) * self.gui.setting.ZOOM_FACTOR
+            cur_yrange = (cur_ylim[1] - cur_ylim[0]) * self.gui.setting.ZOOM_FACTOR
+            xdata = event.xdata
+            ydata = event.ydata
+            if event.button == 'up':
+                scale_factor = 1 / base_scale
+            else:
+                scale_factor = base_scale
+            ax.set_xlim([xdata - cur_xrange * scale_factor, xdata + cur_xrange * scale_factor])
+            ax.set_ylim([ydata - cur_yrange * scale_factor, ydata + cur_yrange * scale_factor])
+            self.tk_canvas.draw()
+        return zoom_fun
 
     def get_curves_list(self) -> list:
         """ In each row of the returned list:
@@ -260,7 +282,6 @@ class line_container(object):
         for i in self.container.keys():
             for j in self.container[i].keys():
                 for r in self.container[i][j].keys():
-                    # temp.append(self.container[i][j][r].file_path)
                     temp.append((self.container[i][j][r].file_path, j, r, \
                         self.container[i][j][r].line2d_object[0].get_visible(), \
                         self.container[i][j][r].line2d_object[0].get_color(), \
@@ -272,10 +293,6 @@ class line_container(object):
                         self.container[i][j][r].tip, \
                         self.container[i][j][r].plt_cords))
         return temp
-                    # print(i, j, r)
-        #             print(self.container[i][j][r].plt_cords)
-        #             return None
-        # pass
         
     def _set_GUI_saved_false(self):
         self.gui.root.title('Data Visualization Software (unsaved)')

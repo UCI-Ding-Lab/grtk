@@ -1,9 +1,12 @@
 # lib
+import csv
+import pstats
 import tkinter
 import tkinter.ttk
 import tkinter.messagebox
 import ctypes
 import sys
+import cProfile
 
 # files
 from helper.logger import logger
@@ -215,4 +218,3 @@ def GUI_manager():
 
 if __name__ == '__main__':
     root, app = GUI_manager()
-
